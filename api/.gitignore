@@ -1,0 +1,21 @@
+# Build results
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs
+*.log
+
+# NuGet
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Exclude appsettings.Development.json if it contains secrets
+HireSphere.Application/appsettings.Development.json
