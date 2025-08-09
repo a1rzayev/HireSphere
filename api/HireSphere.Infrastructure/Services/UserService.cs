@@ -50,14 +50,16 @@ public class UserService
         await _userRepository.UpdateAsync(user);
     }
 
-    public async Task<User> GetUserByIdAsync(Guid id)
+    public async Task<User?> GetUserByIdAsync(Guid id)
     {
-        return await _userRepository.GetByIdAsync(id);
+        var user = await _userRepository.GetByIdAsync(id);
+        return user ?? throw new ArgumentException("User not found.");
     }
 
-    public async Task<User> GetUserByEmailAsync(string email)
+    public async Task<User?> GetUserByEmailAsync(string email)
     {
-        return await _userRepository.GetByEmailAsync(email);
+        var user = await _userRepository.GetByEmailAsync(email);
+        return user ?? throw new ArgumentException("User not found.");
     }
 
     private bool IsPasswordComplex(string password)

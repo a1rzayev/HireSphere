@@ -53,6 +53,7 @@ public class BaseRepository<T> where T : class
     {
         // This is a default implementation that will likely be overridden in specific repositories
         // For generic repositories, this might not make sense, so it returns null
+        await Task.CompletedTask; // Explicitly await to resolve async warning
         return null;
     }
 }
