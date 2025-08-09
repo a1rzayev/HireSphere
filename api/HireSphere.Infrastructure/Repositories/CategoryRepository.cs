@@ -31,14 +31,13 @@ public class CategoryRepository : BaseRepository<Category>, ICategoryRepository
 
     public override async Task AddAsync(Category category)
     {
-        // Check for duplicate name
         var existingCategory = await _dbSet.FirstOrDefaultAsync(c => c.Name.ToLower() == category.Name.ToLower());
         if (existingCategory != null)
         {
             throw new InvalidOperationException($"A category with the name '{category.Name}' already exists.");
         }
 
-        // Check for duplicate slug
+
         var existingSlug = await _dbSet.FirstOrDefaultAsync(c => c.Slug == category.Slug);
         if (existingSlug != null)
         {
@@ -50,7 +49,7 @@ public class CategoryRepository : BaseRepository<Category>, ICategoryRepository
 
     public override async Task UpdateAsync(Category category)
     {
-        // Check for duplicate name (excluding current category)
+
         var existingCategory = await _dbSet
             .FirstOrDefaultAsync(c => 
                 c.Name.ToLower() == category.Name.ToLower() && 
@@ -61,7 +60,7 @@ public class CategoryRepository : BaseRepository<Category>, ICategoryRepository
             throw new InvalidOperationException($"A category with the name '{category.Name}' already exists.");
         }
 
-        // Check for duplicate slug (excluding current category)
+
         var existingSlug = await _dbSet
             .FirstOrDefaultAsync(c => 
                 c.Slug == category.Slug && 
