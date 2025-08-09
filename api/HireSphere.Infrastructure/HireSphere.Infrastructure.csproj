@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="../HireSphere.Core/HireSphere.Core.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.5" />
   </ItemGroup>
 
 </Project>

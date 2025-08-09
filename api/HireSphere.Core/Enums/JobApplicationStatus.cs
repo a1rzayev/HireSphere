@@ -2,9 +2,11 @@ namespace HireSphere.Core.Enums;
 
 public enum JobApplicationStatus
 {
-    Applied,
-    Viewed,
-    Interviewing,
-    Offered,
-    Rejected
+    Applied,     
+    Screening,   
+    Interview,   
+    Offered,     
+    Accepted,    
+    Rejected,    
+    Withdrawn    
 }
