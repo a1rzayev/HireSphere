@@ -25,17 +25,17 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
     public override async Task AddAsync(User user)
     {
-        ValidateUser(user);
         if (await _dbSet.AnyAsync(u => u.Email == user.Email))
             throw new ArgumentException("Email must be unique.");
+
         await base.AddAsync(user);
     }
 
     public override async Task UpdateAsync(User user)
     {
-        ValidateUser(user);
         if (await _dbSet.AnyAsync(u => u.Email == user.Email && u.Id != user.Id))
             throw new ArgumentException("Email must be unique.");
+
         await base.UpdateAsync(user);
     }
 
@@ -45,7 +45,6 @@ public class UserRepository : BaseRepository<User>, IUserRepository
             throw new ArgumentException("Invalid email format.");
         if (!Enum.IsDefined(typeof(Role), user.Role))
             throw new ArgumentException("Invalid role.");
-        // Password complexity is enforced at the service layer, not here (hash only)
     }
 
     private bool IsValidEmail(string email)
