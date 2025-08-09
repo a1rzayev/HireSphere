@@ -1,66 +1,123 @@
-# HireSphere
+# HireSphere - Job Application Management Platform
 
-HireSphere is a modern job searching portal designed to connect job seekers, employers, and companies in a seamless and efficient way. The platform supports job postings, applications, company profiles, and job categorization, with a clean separation of concerns and scalable architecture.
+## Overview
 
-## Core Features
-- User authentication and role management (Admin, Employer, JobSeeker)
-- Company profiles managed by employers
-- Job postings with rich metadata (salary, type, location, etc.)
-- Job applications with workflow states
-- Job categorization for easy filtering and discovery
-
-## Domain-Driven Architecture
-The backend is structured using Domain-Driven Design (DDD) principles, with clear separation between models, enums, and repository interfaces. Business logic is implemented in service and repository layers, keeping models clean and focused.
-
-### Domain Models
-| Model          | Main Focus            | Key Properties / Relations                                  |
-| -------------- | --------------------- | ----------------------------------------------------------- |
-| User           | Authentication, roles | Id, Email, PasswordHash, Role, Name, Surname, Phone, etc.   |
-| Company        | Employer companies    | Id, OwnerUserId (User), Name, Description, etc.             |
-| Job            | Job postings          | Id, CompanyId, CategoryId, Title, Salary, JobType, etc.     |
-| JobApplication | Job applications      | Id, JobId, ApplicantUserId, ResumeUrl, Status, AppliedAt    |
-| Category       | Job classification    | Id, Name, Slug                                              |
-
-### Relationships
-- **User** can own multiple **Companies** (via OwnerUserId)
-- **Company** can post multiple **Jobs** (via CompanyId)
-- **Job** belongs to a **Category** (via CategoryId)
-- **JobApplication** links a **User** (Applicant) to a **Job**
-
-### Enums
-- `Role`: Admin, Employer, JobSeeker
-- `JobType`: FullTime, PartTime, Contract, Internship, Temporary
-- `JobApplicationStatus`: Applied, Viewed, Interviewing, Offered, Rejected
-
-### Repository Interfaces
-Each model has a corresponding repository interface for CRUD operations, e.g.:
-- `IUserRepository`
-- `ICompanyRepository`
-- `IJobRepository`
-- `IJobApplicationRepository`
-- `ICategoryRepository`
-
-## Business Logic
-Business rules (such as validation, workflow, and unique constraints) are implemented in service and repository layers, not in the models themselves. This ensures maintainability and testability.
+HireSphere is a comprehensive job application management platform designed to streamline the hiring process for both employers and job seekers. The platform provides robust features for job posting, application tracking, and user management.
 
 ## Project Structure
-```
-api/HireSphere.Core/
-  Models/         # Domain models (User, Company, Job, etc.)
-  Enums/          # Enum types (Role, JobType, etc.)
-  ...
-api/HireSphere.Infrastructure/
-  # Repository implementations, data access, etc.
-front/HideSphere.Presentation/
-  # Web frontend (MVC, Razor, etc.)
-```
+
+### Backend Architecture
+- Clean Architecture with Separation of Concerns
+- Layered solution with clear domain boundaries
+- Entity Framework Core for data persistence
+
+### Key Domains
+
+#### 1. User Management
+- Supports multiple roles: JobSeeker, Employer, Admin
+- Secure authentication and authorization
+- Profile management with role-based access control
+
+#### 2. Job Management
+- Create, update, and manage job listings
+- Comprehensive job search and filtering
+- Support for various job types and categories
+
+#### 3. Job Application Workflow
+- Advanced application status tracking
+- Strict business rules for application state transitions
+- Prevent duplicate applications
+
+#### 4. Company Management
+- Company profile creation and management
+- Validation for company information
+- Link companies with employers
+
+## Core Technologies
+
+- .NET Core
+- Entity Framework Core
+- C# 10.0
+- Clean Architecture Principles
+
+## Domain Models
+
+### User
+- Unique identification
+- Role-based access
+- Email and password management
+- Profile information
+
+### Job
+- Detailed job listing information
+- Salary range
+- Job type and category
+- Posting and expiration management
+
+### Job Application
+- Comprehensive application tracking
+- Status transition rules
+- Resume and cover letter support
+
+### Company
+- Company profile details
+- Unique slug generation
+- Employer association
+
+## Business Validation Rules
+
+### User
+- Email uniqueness
+- Password complexity
+- Role enforcement
+
+### Job
+- Salary range validation
+- Posting date constraints
+- Company and category verification
+
+### Job Application
+- Strict status transition rules
+- Prevent duplicate applications
+- Application status management
+
+### Company
+- Unique name and slug
+- Employer verification
 
 ## Getting Started
+
+### Prerequisites
+- .NET 6.0 SDK
+- SQL Server or PostgreSQL
+- Visual Studio 2022 or VS Code
+
+### Installation
 1. Clone the repository
-2. Build the solution
-3. Configure your database and environment variables
-4. Run the backend and frontend projects
+2. Configure connection string in `appsettings.json`
+3. Run database migrations
+4. Start the application
 
----
+```bash
+dotnet restore
+dotnet ef database update
+dotnet run
+```
 
-For more details, see the code in the `api/HireSphere.Core/Models` and `api/HireSphere.Core/Enums` folders.
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+## Contact
+
+Asif Rzayev - [Your Email or LinkedIn]
+
+Project Link: [https://github.com/yourusername/HireSphere](https://github.com/yourusername/HireSphere)
