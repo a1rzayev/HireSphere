@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using HireSphere.Core.Models;
 
-namespace HireSphere.Infrastructure;
+namespace HireSphere.Infrastructure.ORM;
 
 public class HireSphereDbContext : DbContext
 {
