@@ -12,4 +12,7 @@ public interface ICategoryEfCoreRepository
     Task AddAsync(Category category);
     Task UpdateAsync(Category category);
     Task DeleteAsync(Guid id);
+    Task<Category?> GetByNameAsync(string name);
+    Task<Category?> GetBySlugAsync(string slug);
+    Task<IEnumerable<Category>> GetByNameContainsAsync(string name);
 }

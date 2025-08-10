@@ -50,4 +50,19 @@ public class JobEfCoreRepository : IJobEfCoreRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    public async Task<IEnumerable<Job>> GetByCompanyIdAsync(Guid companyId)
+    {
+        return await _dbSet.Where(j => j.CompanyId == companyId).ToListAsync();
+    }
+
+    public async Task<IEnumerable<Job>> GetByCategoryIdAsync(Guid categoryId)
+    {
+        return await _dbSet.Where(j => j.CategoryId == categoryId).ToListAsync();
+    }
+
+    public async Task<IEnumerable<Job>> GetActiveJobsAsync()
+    {
+        return await _dbSet.Where(j => j.IsActive && j.ExpiresAt > DateTime.UtcNow).ToListAsync();
+    }
 }

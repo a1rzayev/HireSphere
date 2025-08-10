@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using HireSphere.Core.Models;
 using HireSphere.Infrastructure.ORM;
 using HireSphere.Core.Repositories;
+using HireSphere.Core.Enums;
 
 namespace HireSphere.Infrastructure.Repositories;
 
@@ -49,5 +50,25 @@ public class JobApplicationEfCoreRepository : IJobApplicationEfCoreRepository
             _dbSet.Remove(jobApplication);
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task<IEnumerable<JobApplication>> GetByJobIdAsync(Guid jobId)
+    {
+        return await _dbSet.Where(ja => ja.JobId == jobId).ToListAsync();
+    }
+
+    public async Task<IEnumerable<JobApplication>> GetByApplicantUserIdAsync(Guid applicantUserId)
+    {
+        return await _dbSet.Where(ja => ja.ApplicantUserId == applicantUserId).ToListAsync();
+    }
+
+    public async Task<IEnumerable<JobApplication>> GetByStatusAsync(JobApplicationStatus status)
+    {
+        return await _dbSet.Where(ja => ja.Status == status).ToListAsync();
+    }
+
+    public async Task<JobApplication?> GetByJobAndApplicantAsync(Guid jobId, Guid applicantUserId)
+    {
+        return await _dbSet.FirstOrDefaultAsync(ja => ja.JobId == jobId && ja.ApplicantUserId == applicantUserId);
     }
 }

@@ -12,4 +12,7 @@ public interface ICompanyEfCoreRepository
     Task AddAsync(Company company);
     Task UpdateAsync(Company company);
     Task DeleteAsync(Guid id);
+    Task<IEnumerable<Company>> GetByOwnerUserIdAsync(Guid ownerUserId);
+    Task<IEnumerable<Company>> GetByNameAsync(string name);
+    Task<IEnumerable<Company>> GetByLocationAsync(string location);
 }

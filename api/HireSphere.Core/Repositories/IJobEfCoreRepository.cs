@@ -12,4 +12,7 @@ public interface IJobEfCoreRepository
     Task AddAsync(Job job);
     Task UpdateAsync(Job job);
     Task DeleteAsync(Guid id);
+    Task<IEnumerable<Job>> GetByCompanyIdAsync(Guid companyId);
+    Task<IEnumerable<Job>> GetByCategoryIdAsync(Guid categoryId);
+    Task<IEnumerable<Job>> GetActiveJobsAsync();
 }

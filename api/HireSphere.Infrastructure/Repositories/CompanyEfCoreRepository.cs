@@ -50,4 +50,19 @@ public class CompanyEfCoreRepository : ICompanyEfCoreRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    public async Task<IEnumerable<Company>> GetByOwnerUserIdAsync(Guid ownerUserId)
+    {
+        return await _dbSet.Where(c => c.OwnerUserId == ownerUserId).ToListAsync();
+    }
+
+    public async Task<IEnumerable<Company>> GetByNameAsync(string name)
+    {
+        return await _dbSet.Where(c => c.Name.ToLower().Contains(name.ToLower())).ToListAsync();
+    }
+
+    public async Task<IEnumerable<Company>> GetByLocationAsync(string location)
+    {
+        return await _dbSet.Where(c => c.Location != null && c.Location.ToLower().Contains(location.ToLower())).ToListAsync();
+    }
 }
