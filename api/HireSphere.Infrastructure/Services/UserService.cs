@@ -12,9 +12,9 @@ namespace HireSphere.Infrastructure.Services;
 
 public class UserService
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IUserEfCoreRepository _userRepository;
 
-    public UserService(IUserRepository userRepository)
+    public UserService(IUserEfCoreRepository userRepository)
     {
         _userRepository = userRepository;
     }
