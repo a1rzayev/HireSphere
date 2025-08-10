@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using HireSphere.Infrastructure.ORM;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HireSphere.Infrastructure.Migrations
 {
     [DbContext(typeof(HireSphereDbContext))]
-    partial class HireSphereDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250810152423_AddRefreshTokenEntity")]
+    partial class AddRefreshTokenEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
