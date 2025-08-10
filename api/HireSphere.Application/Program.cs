@@ -47,6 +47,7 @@ builder.Services.AddScoped<ICategoryEfCoreRepository, CategoryEfCoreRepository>(
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
