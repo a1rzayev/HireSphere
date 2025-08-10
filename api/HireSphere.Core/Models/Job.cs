@@ -14,11 +14,11 @@ public class Job
 
     [Required(ErrorMessage = "Job title is required")]
     [StringLength(200, MinimumLength = 2, ErrorMessage = "Job title must be between 2 and 200 characters")]
-    public required string Title { get; set; }
+    public string Title { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Job description is required")]
     [StringLength(2000, MinimumLength = 10, ErrorMessage = "Job description must be between 10 and 2000 characters")]
-    public required string Description { get; set; }
+    public string Description { get; set; } = string.Empty;
 
     public string? Requirements { get; set; }
 
@@ -80,7 +80,7 @@ public class Job
         ValidateJob();
     }
 
-    private void ValidateJob()
+    public void ValidateJob()
     {
         if (SalaryFrom.HasValue && SalaryTo.HasValue && SalaryFrom > SalaryTo)
         {
@@ -92,14 +92,14 @@ public class Job
             throw new ArgumentException("Job expiration date must be after the posting date.");
         }
 
-        if (string.IsNullOrWhiteSpace(Title))
+        if (string.IsNullOrWhiteSpace(Title) || Title.Trim().Length < 2)
         {
-            throw new ArgumentException("Job title is required.");
+            throw new ArgumentException("Title is required and must be at least 2 characters long.");
         }
 
-        if (string.IsNullOrWhiteSpace(Description))
+        if (string.IsNullOrWhiteSpace(Description) || Description.Trim().Length < 10)
         {
-            throw new ArgumentException("Job description is required.");
+            throw new ArgumentException("Description is required and must be at least 10 characters long.");
         }
 
         if (!Enum.IsDefined(typeof(JobType), JobType))

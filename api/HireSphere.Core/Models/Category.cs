@@ -11,9 +11,9 @@ public class Category
     [Required(ErrorMessage = "Category name is required")]
     [StringLength(100, MinimumLength = 2, ErrorMessage = "Category name must be between 2 and 100 characters")]
     [RegularExpression(@"^[a-zA-Z0-9\s\-]+$", ErrorMessage = "Category name can only contain letters, numbers, spaces, and hyphens")]
-    public required string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
-    public string Slug { get; private set; }
+    public string Slug { get; private set; } = string.Empty;
 
     public Category() 
     {
@@ -25,27 +25,43 @@ public class Category
     {
         Id = id;
         Name = name;
+        
         Slug = GenerateSlug(name);
 
-        ValidateCategory();
+        ValidateName(name);
     }
 
-    private void ValidateCategory()
+    private void ValidateName(string name)
     {
-        if (string.IsNullOrWhiteSpace(Name))
-        {
-            throw new ArgumentException("Category name is required.");
-        }
-
-        if (Name.Length < 2 || Name.Length > 100)
+        if (string.IsNullOrWhiteSpace(name))
         {
             throw new ArgumentException("Category name must be between 2 and 100 characters.");
+        }
+
+        string trimmedName = name.Trim();
+
+        if (trimmedName.Length < 2 || trimmedName.Length > 100)
+        {
+            throw new ArgumentException("Category name must be between 2 and 100 characters.");
+        }
+
+        if (!Regex.IsMatch(trimmedName, @"^[a-zA-Z0-9\s\-]+$"))
+        {
+            throw new ArgumentException("Category name can only contain letters, numbers, spaces, and hyphens");
         }
     }
 
     private string GenerateSlug(string name)
     {
-        string slug = Regex.Replace(name.ToLowerInvariant(), @"[^a-z0-9\s-]", "");
+        string trimmedName = name.Trim();
+
+        if (trimmedName.Length < 2)
+        {
+            return "category";
+        }
+
+        string slug = Regex.Replace(trimmedName.ToLowerInvariant(), @"[^a-z0-9\s-]", "");
+        
         slug = Regex.Replace(slug, @"\s+", "-").Trim('-');
 
         return string.IsNullOrWhiteSpace(slug) ? "category" : slug;
@@ -53,17 +69,11 @@ public class Category
 
     public void UpdateName(string newName)
     {
-        if (string.IsNullOrWhiteSpace(newName))
-        {
-            throw new ArgumentException("Category name is required.");
-        }
+        string newSlug = GenerateSlug(newName);
 
-        if (newName.Length < 2 || newName.Length > 100)
-        {
-            throw new ArgumentException("Category name must be between 2 and 100 characters.");
-        }
+        ValidateName(newName);
 
-        Name = newName;
-        Slug = GenerateSlug(newName);
+        Name = newName.Trim();
+        Slug = newSlug;
     }
 }

@@ -12,10 +12,10 @@ public class User
     [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Invalid email format")]
     [StringLength(100, MinimumLength = 5, ErrorMessage = "Email must be between 5 and 100 characters")]
-    public required string Email { get; set; }
+    public string Email { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Password hash is required")]
-    public required string PasswordHash { get; set; }
+    public string PasswordHash { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Role is required")]
     public Role Role { get; set; }
@@ -23,12 +23,12 @@ public class User
     [Required(ErrorMessage = "Name is required")]
     [StringLength(50, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 50 characters")]
     [RegularExpression(@"^[a-zA-Z\s'-]+$", ErrorMessage = "Name can only contain letters, spaces, hyphens, and apostrophes")]
-    public required string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Surname is required")]
     [StringLength(50, MinimumLength = 2, ErrorMessage = "Surname must be between 2 and 50 characters")]
     [RegularExpression(@"^[a-zA-Z\s'-]+$", ErrorMessage = "Surname can only contain letters, spaces, hyphens, and apostrophes")]
-    public required string Surname { get; set; }
+    public string Surname { get; set; } = string.Empty;
 
     [Phone(ErrorMessage = "Invalid phone number format")]
     [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
@@ -39,10 +39,6 @@ public class User
 
     public User() 
     {
-        Email = string.Empty;
-        PasswordHash = string.Empty;
-        Name = string.Empty;
-        Surname = string.Empty;
         Role = Role.JobSeeker; //Default role
         CreatedAt = DateTime.UtcNow;
     }
@@ -62,7 +58,7 @@ public class User
         ValidateUser();
     }
 
-    private void ValidateUser()
+    public void ValidateUser()
     {
         if (!Enum.IsDefined(typeof(Role), Role))
         {
@@ -87,12 +83,14 @@ public class User
             throw new ArgumentException("Email cannot be empty.");
         }
 
+        newEmail = newEmail.Trim();
+
         if (newEmail.Length < 5 || newEmail.Length > 100)
         {
             throw new ArgumentException("Email must be between 5 and 100 characters.");
         }
 
-        if (!Regex.IsMatch(newEmail, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+        if (!Regex.IsMatch(newEmail, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"))
         {
             throw new ArgumentException("Invalid email format.");
         }
