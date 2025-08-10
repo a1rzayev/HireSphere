@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using HireSphere.Core.Models;
 using HireSphere.Infrastructure.ORM;
+using HireSphere.Core.Repositories;
 
 namespace HireSphere.Infrastructure.Repositories;
 
