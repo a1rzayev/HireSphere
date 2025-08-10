@@ -1,9 +1,23 @@
+using HireSphere.Infrastructure.ORM;
+using Microsoft.EntityFrameworkCore;
+using HireSphere.Core.Repositories;
+using HireSphere.Infrastructure.Repositories;
+using HireSphere.Infrastructure.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<HireSphereDbContext>(options =>
+    options.UseInMemoryDatabase("HireSphereDb")); // Replace with UseSqlServer or other provider as needed
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<IJobRepository, JobRepository>();
+builder.Services.AddScoped<IJobApplicationRepository, JobApplicationRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
 
