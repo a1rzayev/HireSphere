@@ -16,6 +16,11 @@ builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IJobRepository, JobRepository>();
 builder.Services.AddScoped<IJobApplicationRepository, JobApplicationRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IUserEfCoreRepository, UserEfCoreRepository>();
+builder.Services.AddScoped<IJobEfCoreRepository, JobEfCoreRepository>();
+builder.Services.AddScoped<IJobApplicationEfCoreRepository, JobApplicationEfCoreRepository>();
+builder.Services.AddScoped<ICompanyEfCoreRepository, CompanyEfCoreRepository>();
+builder.Services.AddScoped<ICategoryEfCoreRepository, CategoryEfCoreRepository>();
 
 builder.Services.AddScoped<UserService>();
 

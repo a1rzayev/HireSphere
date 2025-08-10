@@ -7,7 +7,7 @@ using HireSphere.Infrastructure.ORM;
 
 namespace HireSphere.Infrastructure.Repositories;
 
-public class UserEfCoreRepository
+public class UserEfCoreRepository : IUserEfCoreRepository
 {
     private readonly HireSphereDbContext _context;
     private readonly DbSet<User> _dbSet;

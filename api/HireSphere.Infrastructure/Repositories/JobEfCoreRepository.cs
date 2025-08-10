@@ -7,7 +7,7 @@ using HireSphere.Infrastructure.ORM;
 
 namespace HireSphere.Infrastructure.Repositories;
 
-public class JobEfCoreRepository
+public class JobEfCoreRepository : IJobEfCoreRepository
 {
     private readonly HireSphereDbContext _context;
     private readonly DbSet<Job> _dbSet;

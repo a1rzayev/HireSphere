@@ -7,7 +7,7 @@ using HireSphere.Infrastructure.ORM;
 
 namespace HireSphere.Infrastructure.Repositories;
 
-public class CategoryEfCoreRepository
+public class CategoryEfCoreRepository : ICategoryEfCoreRepository
 {
     private readonly HireSphereDbContext _context;
     private readonly DbSet<Category> _dbSet;
