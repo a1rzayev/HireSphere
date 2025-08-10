@@ -50,4 +50,19 @@ public class CategoryEfCoreRepository : ICategoryEfCoreRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    public async Task<Category?> GetByNameAsync(string name)
+    {
+        return await _dbSet.FirstOrDefaultAsync(c => c.Name.ToLower() == name.ToLower());
+    }
+
+    public async Task<Category?> GetBySlugAsync(string slug)
+    {
+        return await _dbSet.FirstOrDefaultAsync(c => c.Slug.ToLower() == slug.ToLower());
+    }
+
+    public async Task<IEnumerable<Category>> GetByNameContainsAsync(string name)
+    {
+        return await _dbSet.Where(c => c.Name.ToLower().Contains(name.ToLower())).ToListAsync();
+    }
 }
