@@ -16,7 +16,7 @@ public class JobApplication
 
     [Required(ErrorMessage = "Resume URL is required")]
     [Url(ErrorMessage = "Invalid resume URL format")]
-    public required string ResumeUrl { get; set; }
+    public string ResumeUrl { get; set; } = string.Empty;
 
     public string? CoverLetter { get; set; }
 
@@ -48,7 +48,7 @@ public class JobApplication
         ValidateApplication();
     }
 
-    private void ValidateApplication()
+    public void ValidateApplication()
     {
         if (!Uri.TryCreate(ResumeUrl, UriKind.Absolute, out _))
         {
@@ -61,15 +61,11 @@ public class JobApplication
         }
     }
 
-
-    // Domain method to change application status with business rules
     public void ChangeStatus(JobApplicationStatus newStatus)
     {
-        // Business rules for status transitions
         switch (Status)
         {
             case JobApplicationStatus.Applied:
-                // From Applied, can move to: Screening, Rejected
                 if (newStatus != JobApplicationStatus.Screening && 
                     newStatus != JobApplicationStatus.Rejected)
                 {
@@ -78,7 +74,6 @@ public class JobApplication
                 break;
 
             case JobApplicationStatus.Screening:
-                // From Screening, can move to: Interview, Rejected
                 if (newStatus != JobApplicationStatus.Interview && 
                     newStatus != JobApplicationStatus.Rejected)
                 {
@@ -87,7 +82,6 @@ public class JobApplication
                 break;
 
             case JobApplicationStatus.Interview:
-                // From Interview, can move to: Offered, Rejected
                 if (newStatus != JobApplicationStatus.Offered && 
                     newStatus != JobApplicationStatus.Rejected)
                 {
@@ -96,7 +90,6 @@ public class JobApplication
                 break;
 
             case JobApplicationStatus.Offered:
-                // From Offered, can move to: Accepted, Rejected
                 if (newStatus != JobApplicationStatus.Accepted && 
                     newStatus != JobApplicationStatus.Rejected)
                 {
@@ -105,22 +98,18 @@ public class JobApplication
                 break;
 
             case JobApplicationStatus.Rejected:
-                // Once Rejected, no further transitions allowed
-                throw new InvalidOperationException("Cannot change status from Rejected.");
+                throw new InvalidOperationException("Invalid status transition from Rejected.");
 
             case JobApplicationStatus.Accepted:
-                // Once Accepted, no further transitions allowed
-                throw new InvalidOperationException("Cannot change status from Accepted.");
+                throw new InvalidOperationException("Invalid status transition from Accepted.");
 
             case JobApplicationStatus.Withdrawn:
-                // Once Withdrawn, no further transitions allowed
-                throw new InvalidOperationException("Cannot change status from Withdrawn.");
+                throw new InvalidOperationException("Invalid status transition from Withdrawn.");
 
             default:
                 throw new ArgumentException("Invalid application status.");
         }
 
-        // If all validations pass, update the status
         Status = newStatus;
     }
 
