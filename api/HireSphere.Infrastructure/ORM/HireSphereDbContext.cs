@@ -13,6 +13,7 @@ public class HireSphereDbContext : DbContext
     public DbSet<JobApplication> JobApplications { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +34,23 @@ public class HireSphereDbContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(rt => rt.Token).IsUnique();
+        });
+
+        modelBuilder.Entity<PasswordResetToken>(entity =>
+        {
+            entity.HasKey(prt => prt.Id);
+            entity.Property(prt => prt.Token).IsRequired().HasMaxLength(500);
+            entity.Property(prt => prt.ExpiryDate).IsRequired();
+            entity.Property(prt => prt.IsUsed).IsRequired();
+            entity.Property(prt => prt.CreatedAt).IsRequired();
+            entity.Property(prt => prt.UserId).IsRequired();
+
+            entity.HasOne(prt => prt.User)
+                  .WithMany()
+                  .HasForeignKey(prt => prt.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(prt => prt.Token).IsUnique();
         });
     }
 }
