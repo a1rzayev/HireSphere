@@ -4,20 +4,17 @@ namespace HireSphere.Presentation.Models;
 
 public class ProfileViewModel
 {
-    [Required(ErrorMessage = "First name is required")]
     [StringLength(50, ErrorMessage = "First name cannot exceed 50 characters")]
     [Display(Name = "First Name")]
-    public string Name { get; set; } = string.Empty;
+    public string? Name { get; set; }
 
-    [Required(ErrorMessage = "Last name is required")]
     [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
     [Display(Name = "Last Name")]
-    public string Surname { get; set; } = string.Empty;
+    public string? Surname { get; set; }
 
-    [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Please enter a valid email address")]
     [Display(Name = "Email")]
-    public string Email { get; set; } = string.Empty;
+    public string? Email { get; set; }
 
     [Display(Name = "Phone Number")]
     [Phone(ErrorMessage = "Please enter a valid phone number")]

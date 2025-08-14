@@ -3,6 +3,7 @@ using HireSphere.Presentation.Models;
 using System.Text;
 using System.Text.Json;
 
+
 namespace HireSphere.Presentation.Controllers;
 
 public class AuthController : Controller
@@ -395,7 +396,7 @@ public class AuthController : Controller
     }
 
     [HttpGet]
-    public IActionResult Profile()
+    public async Task<IActionResult> Profile()
     {
         var accessToken = HttpContext.Session.GetString("AccessToken");
         if (string.IsNullOrEmpty(accessToken))
@@ -405,10 +406,51 @@ public class AuthController : Controller
 
         var profile = new ProfileViewModel
         {
-            Name = HttpContext.Session.GetString("UserName")?.Split(' ')[0] ?? "",
-            Surname = HttpContext.Session.GetString("UserName")?.Split(' ').Length > 1 ? string.Join(" ", HttpContext.Session.GetString("UserName")?.Split(' ').Skip(1) ?? new string[0]) : "",
-            Email = HttpContext.Session.GetString("UserEmail") ?? ""
+            Name = HttpContext.Session.GetString("UserName")?.Split(' ')[0],
+            Surname = HttpContext.Session.GetString("UserName")?.Split(' ').Length > 1 ? string.Join(" ", HttpContext.Session.GetString("UserName")?.Split(' ').Skip(1) ?? new string[0]) : null,
+            Email = HttpContext.Session.GetString("UserEmail")
         };
+
+
+        try
+        {
+            var baseUrl = _configuration["BASE_URL"];
+            if (!string.IsNullOrEmpty(baseUrl) && baseUrl != "baseurl")
+            {
+                var companiesRequest = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/api/company");
+                var companiesResponse = await _httpClient.SendAsync(companiesRequest);
+                
+                if (companiesResponse.IsSuccessStatusCode)
+                {
+                    var companiesJson = await companiesResponse.Content.ReadAsStringAsync();
+                    var companies = JsonSerializer.Deserialize<JsonElement>(companiesJson);
+                    
+                    if (companies.ValueKind == JsonValueKind.Array)
+                    {
+                        var companyList = new List<string>();
+                        foreach (var company in companies.EnumerateArray())
+                        {
+                            if (company.TryGetProperty("name", out var name))
+                            {
+                                string companyName = name.ValueKind == JsonValueKind.String 
+                                    ? name.GetString() ?? "" 
+                                    : name.ToString();
+                                if (!string.IsNullOrEmpty(companyName))
+                                {
+                                    companyList.Add(companyName);
+                                }
+                            }
+                        }
+                        ViewBag.Companies = companyList;
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+
+            ViewBag.Companies = new List<string>();
+        }
 
         return View(profile);
     }
@@ -437,22 +479,43 @@ public class AuthController : Controller
                 return View(model);
             }
 
+            var userId = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userId))
+            {
+                ViewBag.ErrorMessage = "User ID not found in session. Please log in again.";
+                return View(model);
+            }
+
+            var getUserRequest = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/api/user/{userId}");
+            getUserRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            
+            var getUserResponse = await _httpClient.SendAsync(getUserRequest);
+            if (!getUserResponse.IsSuccessStatusCode)
+            {
+                ViewBag.ErrorMessage = "Failed to fetch current user data. Please try again.";
+                return View(model);
+            }
+
+            var currentUserJson = await getUserResponse.Content.ReadAsStringAsync();
+            var currentUser = JsonSerializer.Deserialize<JsonElement>(currentUserJson);
+
+            var currentRoleString = GetJsonValueAsString(currentUser, "role");
+            var currentRole = ParseRole(currentRoleString);
+            
             var updateRequest = new
             {
-                Name = model.Name.Trim(),
-                Surname = model.Surname.Trim(),
-                Email = model.Email.Trim(),
-                PhoneNumber = model.PhoneNumber?.Trim(),
-                Bio = model.Bio?.Trim(),
-                Location = model.Location?.Trim(),
-                Website = model.Website?.Trim(),
-                Company = model.Company?.Trim()
+                name = !string.IsNullOrWhiteSpace(model.Name) ? model.Name.Trim() : "",
+                surname = !string.IsNullOrWhiteSpace(model.Surname) ? model.Surname.Trim() : "",
+                email = !string.IsNullOrWhiteSpace(model.Email) ? model.Email.Trim() : "",
+                phone = !string.IsNullOrWhiteSpace(model.PhoneNumber) ? model.PhoneNumber.Trim() : null,
+                passwordHash = GetJsonValueAsString(currentUser, "passwordHash"),
+                role = currentRole
             };
 
             var json = JsonSerializer.Serialize(updateRequest);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var request = new HttpRequestMessage(HttpMethod.Put, $"{baseUrl}/api/user/profile");
+            var request = new HttpRequestMessage(HttpMethod.Put, $"{baseUrl}/api/user/{userId}");
             request.Content = content;
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -460,8 +523,17 @@ public class AuthController : Controller
 
             if (response.IsSuccessStatusCode)
             {
-                HttpContext.Session.SetString("UserName", $"{model.Name} {model.Surname}".Trim());
-                HttpContext.Session.SetString("UserEmail", model.Email);
+                var userName = $"{model.Name ?? ""} {model.Surname ?? ""}".Trim();
+                var userEmail = model.Email ?? "";
+                
+                if (!string.IsNullOrWhiteSpace(userName))
+                {
+                    HttpContext.Session.SetString("UserName", userName);
+                }
+                if (!string.IsNullOrWhiteSpace(userEmail))
+                {
+                    HttpContext.Session.SetString("UserEmail", userEmail);
+                }
 
                 ViewBag.SuccessMessage = "Profile updated successfully!";
                 return View(model);
@@ -476,5 +548,57 @@ public class AuthController : Controller
             ViewBag.ErrorMessage = $"An error occurred while updating profile: {ex.Message}";
             return View(model);
         }
+    }
+
+    private string GetJsonValueAsString(JsonElement element, string propertyName)
+    {
+        try
+        {
+            if (element.TryGetProperty(propertyName, out var property))
+            {
+                return property.ValueKind switch
+                {
+                    JsonValueKind.String => property.GetString() ?? "",
+                    JsonValueKind.Number => property.GetInt64().ToString(),
+                    JsonValueKind.True => "true",
+                    JsonValueKind.False => "false",
+                    JsonValueKind.Null => "",
+                    _ => property.ToString()
+                };
+            }
+            return "";
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    private int ParseRole(string roleString)
+    {
+        if (string.IsNullOrWhiteSpace(roleString))
+            return 2;
+            
+        roleString = roleString.Trim().Trim('"', '\'');
+        
+        if (int.TryParse(roleString, out var roleNumber))
+        {
+            return roleNumber switch
+            {
+                0 => 0, 
+                1 => 1, 
+                2 => 2, 
+                _ => 2  
+            };
+        }
+        
+        if (roleString.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+            return 0;
+        if (roleString.Equals("Employer", StringComparison.OrdinalIgnoreCase))
+            return 1;
+        if (roleString.Equals("JobSeeker", StringComparison.OrdinalIgnoreCase))
+            return 2;
+        
+        return 2; 
     }
 }
