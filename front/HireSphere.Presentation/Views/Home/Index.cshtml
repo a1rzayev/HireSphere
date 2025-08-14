@@ -13,10 +13,17 @@
         <script>
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userRole');
+            console.log('Tokens cleared from localStorage');
+        </script>
+    }
+    
+    @if (TempData["AccessToken"] != null && TempData["RefreshToken"] != null)
+    {
+        <script>
+            console.log('Storing tokens from TempData to localStorage...');
+            localStorage.setItem('accessToken', '@TempData["AccessToken"]');
+            localStorage.setItem('refreshToken', '@TempData["RefreshToken"]');
+            console.log('Tokens stored successfully!');
         </script>
     }
 }

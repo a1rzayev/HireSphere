@@ -23,6 +23,18 @@ public class HomeController : Controller
         return View();
     }
 
+    public IActionResult Debug()
+    {
+        var config = new
+        {
+            Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+            BaseUrl = HttpContext.RequestServices.GetService<IConfiguration>()?["BASE_URL"],
+            IsDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development"
+        };
+        
+        return Json(config);
+    }
+
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

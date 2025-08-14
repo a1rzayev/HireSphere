@@ -1,5 +1,15 @@
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsDevelopment())
+{
+    Console.WriteLine("Running in Development mode");
+}
+else
+{
+    builder.Environment.EnvironmentName = "Development";
+    Console.WriteLine("Forced to Development mode");
+}
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

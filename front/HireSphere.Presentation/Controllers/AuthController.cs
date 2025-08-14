@@ -77,6 +77,9 @@ public class AuthController : Controller
 
             var baseUrl = _configuration["BASE_URL"];
             
+            System.Diagnostics.Debug.WriteLine($"Using BASE_URL: {baseUrl}");
+            System.Diagnostics.Debug.WriteLine($"Environment: {_configuration["ASPNETCORE_ENVIRONMENT"]}");
+            
             if (string.IsNullOrEmpty(baseUrl) || baseUrl == "baseurl")
             {
                 ViewBag.ErrorMessage = "Configuration error: BASE_URL is not properly configured. Please set BASE_URL in appsettings.json";
@@ -138,7 +141,10 @@ public class AuthController : Controller
 
             var baseUrl = _configuration["BASE_URL"];
             
-            if (string.IsNullOrEmpty(baseUrl) || baseUrl == "baseUrl")
+            System.Diagnostics.Debug.WriteLine($"Using BASE_URL: {baseUrl}");
+            System.Diagnostics.Debug.WriteLine($"Environment: {_configuration["ASPNETCORE_ENVIRONMENT"]}");
+            
+            if (string.IsNullOrEmpty(baseUrl) || baseUrl == "baseurl")
             {
                 ViewBag.ErrorMessage = "Configuration error: BASE_URL is not properly configured. Please set BASE_URL in appsettings.json";
                 return View(model);
@@ -218,7 +224,8 @@ public class AuthController : Controller
                         if (!string.IsNullOrEmpty(token))
                         {
                             HttpContext.Session.SetString("AccessToken", token);
-                            ViewBag.AccessToken = token;
+                            TempData["AccessToken"] = token;
+                            System.Diagnostics.Debug.WriteLine($"Setting TempData.AccessToken: {token}");
                         }
                     }
                     
@@ -231,7 +238,8 @@ public class AuthController : Controller
                         if (!string.IsNullOrEmpty(refresh))
                         {
                             HttpContext.Session.SetString("RefreshToken", refresh);
-                            ViewBag.RefreshToken = refresh;
+                            TempData["RefreshToken"] = refresh;
+                            System.Diagnostics.Debug.WriteLine($"Setting TempData.RefreshToken: {refresh}");
                         }
                     }
                     
@@ -245,7 +253,7 @@ public class AuthController : Controller
                             if (!string.IsNullOrEmpty(userId))
                             {
                                 HttpContext.Session.SetString("UserId", userId);
-                                ViewBag.UserId = userId;
+
                             }
                         }
                         
@@ -265,13 +273,13 @@ public class AuthController : Controller
                                 if (!string.IsNullOrEmpty(userName))
                                 {
                                     HttpContext.Session.SetString("UserName", userName);
-                                    ViewBag.UserName = userName;
+
                                 }
                             }
                             else if (!string.IsNullOrEmpty(nameValue))
                             {
                                 HttpContext.Session.SetString("UserName", nameValue);
-                                ViewBag.UserName = nameValue;
+
                             }
                         }
                         
@@ -283,7 +291,7 @@ public class AuthController : Controller
                             if (!string.IsNullOrEmpty(emailValue))
                             {
                                 HttpContext.Session.SetString("UserEmail", emailValue);
-                                ViewBag.UserEmail = emailValue;
+
                             }
                         }
                         
@@ -295,10 +303,13 @@ public class AuthController : Controller
                             if (!string.IsNullOrEmpty(roleValue))
                             {
                                 HttpContext.Session.SetString("UserRole", roleValue);
-                                ViewBag.UserRole = roleValue;
+
                             }
                         }
                     }
+
+                    System.Diagnostics.Debug.WriteLine($"Before redirect - TempData.AccessToken: {TempData["AccessToken"]}");
+                    System.Diagnostics.Debug.WriteLine($"Before redirect - TempData.RefreshToken: {TempData["RefreshToken"]}");
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -360,6 +371,10 @@ public class AuthController : Controller
             if (!string.IsNullOrEmpty(refreshToken))
             {
                 var baseUrl = _configuration["BASE_URL"];
+                
+                System.Diagnostics.Debug.WriteLine($"Logout - Using BASE_URL: {baseUrl}");
+                System.Diagnostics.Debug.WriteLine($"Logout - Environment: {_configuration["ASPNETCORE_ENVIRONMENT"]}");
+                
                 var json = JsonSerializer.Serialize(refreshToken);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 

@@ -76,30 +76,4 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
-    @if (ViewBag.AccessToken != null && ViewBag.RefreshToken != null && 
-         !string.IsNullOrEmpty(ViewBag.AccessToken) && !string.IsNullOrEmpty(ViewBag.RefreshToken))
-    {
-        <script>
-            localStorage.setItem('accessToken', '@ViewBag.AccessToken');
-            localStorage.setItem('refreshToken', '@ViewBag.RefreshToken');
-            
-            @if (ViewBag.UserId != null && !string.IsNullOrEmpty(ViewBag.UserId))
-            {
-                <text>localStorage.setItem('userId', '@ViewBag.UserId');</text>
-            }
-            @if (ViewBag.UserName != null && !string.IsNullOrEmpty(ViewBag.UserName))
-            {
-                <text>localStorage.setItem('userName', '@ViewBag.UserName');</text>
-            }
-            @if (ViewBag.UserEmail != null && !string.IsNullOrEmpty(ViewBag.UserEmail))
-            {
-                <text>localStorage.setItem('userEmail', '@ViewBag.UserEmail');</text>
-            }
-            @if (ViewBag.UserRole != null && !string.IsNullOrEmpty(ViewBag.UserRole))
-            {
-                <text>localStorage.setItem('userRole', '@ViewBag.UserRole');</text>
-            }
-        </script>
-    }
 }

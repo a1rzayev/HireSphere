@@ -11,22 +11,12 @@ const AuthUtils = {
         return localStorage.getItem('refreshToken');
     },
 
-    getUserInfo: function() {
-        return {
-            id: localStorage.getItem('userId'),
-            name: localStorage.getItem('userName'),
-            email: localStorage.getItem('userEmail'),
-            role: localStorage.getItem('userRole')
-        };
-    },
+
 
     logout: function() {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('userRole');
+        console.log('Tokens cleared from localStorage');
     },
 
     isTokenExpired: function() {
@@ -45,8 +35,15 @@ const AuthUtils = {
 
 document.addEventListener('DOMContentLoaded', function() {
     if (AuthUtils.isLoggedIn()) {
-        console.log('User is logged in:', AuthUtils.getUserInfo());
+        console.log('User is logged in with valid tokens');
     } else {
         console.log('User is not logged in');
+    }
+});
+
+window.addEventListener('beforeunload', function() {
+    if (AuthUtils.isLoggedIn()) {
+        console.log('Page unloading - clearing tokens');
+        AuthUtils.logout();
     }
 });
