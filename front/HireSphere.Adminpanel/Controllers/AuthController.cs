@@ -59,7 +59,8 @@ public class AuthController : Controller
             var loginRequest = new
             {
                 Email = model.Email.Trim(),
-                Password = model.Password
+                Password = model.Password,
+                Role = 0 
             };
 
             var json = JsonSerializer.Serialize(loginRequest);
@@ -100,6 +101,8 @@ public class AuthController : Controller
 
             var responseContent = await response.Content.ReadAsStringAsync();
             
+            System.Diagnostics.Debug.WriteLine($"API Response Content: {responseContent}");
+            
             if (string.IsNullOrWhiteSpace(responseContent))
             {
                 ViewBag.ErrorMessage = "API returned an empty response. Please check if the API is running and accessible.";
@@ -121,24 +124,6 @@ public class AuthController : Controller
             {
                 if (authResponse.TryGetProperty("success", out var success) && success.GetBoolean())
                 {
-                    // Check if user has admin role
-                    if (authResponse.TryGetProperty("user", out var adminUserElement) && adminUserElement.ValueKind != JsonValueKind.Null)
-                    {
-                        if (adminUserElement.TryGetProperty("role", out var adminRole))
-                        {
-                            string roleValue = adminRole.ValueKind == JsonValueKind.String 
-                                ? adminRole.GetString() ?? "" 
-                                : adminRole.ToString();
-                            
-                            // Only allow admin users to access the admin panel
-                            if (!roleValue.Equals("Admin", StringComparison.OrdinalIgnoreCase) && 
-                                !roleValue.Equals("0", StringComparison.OrdinalIgnoreCase))
-                            {
-                                ViewBag.ErrorMessage = "Access denied. Only administrators can access the admin panel.";
-                                return View(model);
-                            }
-                        }
-                    }
 
                     if (authResponse.TryGetProperty("accessToken", out var accessToken))
                     {
@@ -146,12 +131,22 @@ public class AuthController : Controller
                             ? accessToken.GetString() ?? "" 
                             : accessToken.ToString();
                         
+                        System.Diagnostics.Debug.WriteLine($"Extracted accessToken: {token}, Length: {token?.Length ?? 0}");
+                        
                         if (!string.IsNullOrEmpty(token))
                         {
                             HttpContext.Session.SetString("AccessToken", token);
                             TempData["AccessToken"] = token;
                             System.Diagnostics.Debug.WriteLine($"Setting TempData.AccessToken: {token}");
                         }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("AccessToken is null or empty after extraction");
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("Could not find accessToken property in response");
                     }
                     
                     if (authResponse.TryGetProperty("refreshToken", out var refreshToken))
@@ -160,12 +155,22 @@ public class AuthController : Controller
                             ? refreshToken.GetString() ?? "" 
                             : refreshToken.ToString();
                         
+                        System.Diagnostics.Debug.WriteLine($"Extracted refreshToken: {refresh}, Length: {refresh?.Length ?? 0}");
+                        
                         if (!string.IsNullOrEmpty(refresh))
                         {
                             HttpContext.Session.SetString("RefreshToken", refresh);
                             TempData["RefreshToken"] = refresh;
                             System.Diagnostics.Debug.WriteLine($"Setting TempData.RefreshToken: {refresh}");
                         }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("RefreshToken is null or empty after extraction");
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("Could not find refreshToken property in response");
                     }
                     
                     if (authResponse.TryGetProperty("user", out var userElement) && userElement.ValueKind != JsonValueKind.Null)

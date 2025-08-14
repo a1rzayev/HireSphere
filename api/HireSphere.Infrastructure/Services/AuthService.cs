@@ -37,6 +37,11 @@ public class AuthService : IAuthService
             return AuthResponseDto.FailureResponse("Invalid email or password");
         }
 
+        if (user.Role != loginRequest.Role)
+        {
+            return AuthResponseDto.FailureResponse($"Access denied. This application requires {loginRequest.Role} role, but your account has {user.Role} role.");
+        }
+
         var accessToken = _jwtService.GenerateAccessToken(user);
         var refreshToken = _jwtService.CreateRefreshToken(user.Id);
 

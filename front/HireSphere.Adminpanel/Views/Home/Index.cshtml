@@ -1,8 +1,61 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Admin Panel";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Admin Panel</h1>
+    <p>Welcome to the HireSphere Administration Panel</p>
 </div>
+
+@section Scripts {
+    <script>
+        if (window.homeScriptsExecuted) {
+            console.log('Home scripts already executed, skipping...');
+        } else {
+            window.homeScriptsExecuted = true;
+            
+            const scriptId = Date.now() + Math.random();
+            console.log(`[${scriptId}] Home/Index Scripts section loaded`);
+            console.log(`[${scriptId}] ViewBag.ClearLocalStorage:`, @(ViewBag.ClearLocalStorage?.ToString().ToLower() ?? "false"));
+            console.log(`[${scriptId}] TempData AccessToken:`, '@(TempData["AccessToken"] ?? "null")');
+            console.log(`[${scriptId}] TempData RefreshToken:`, '@(TempData["RefreshToken"] ?? "null")');
+        }
+    </script>
+    
+    @if (ViewBag.ClearLocalStorage == true)
+    {
+        <script>
+            console.log('Clearing localStorage tokens...');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            console.log('Admin tokens cleared from localStorage');
+            updateNavigationVisibility();
+        </script>
+    }
+    
+    @if (TempData["AccessToken"] != null && TempData["RefreshToken"] != null)
+    {
+        <script>
+            console.log('Storing admin tokens from TempData to localStorage...');
+            console.log('AccessToken value:', '@TempData["AccessToken"]');
+            console.log('RefreshToken value:', '@TempData["RefreshToken"]');
+            
+            localStorage.setItem('accessToken', '@TempData["AccessToken"]');
+            localStorage.setItem('refreshToken', '@TempData["RefreshToken"]');
+            
+            console.log('Admin tokens stored successfully!');
+            console.log('localStorage accessToken:', localStorage.getItem('accessToken'));
+            console.log('localStorage refreshToken:', localStorage.getItem('refreshToken'));
+            
+            updateNavigationVisibility();
+        </script>
+    }
+    else
+    {
+        <script>
+            console.log('No tokens found in TempData');
+            console.log('AccessToken is null:', @(TempData["AccessToken"] == null ? "true" : "false"));
+            console.log('RefreshToken is null:', @(TempData["RefreshToken"] == null ? "true" : "false"));
+        </script>
+    }
+}

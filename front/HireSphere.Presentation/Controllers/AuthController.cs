@@ -154,7 +154,8 @@ public class AuthController : Controller
             var loginRequest = new
             {
                 Email = model.Email.Trim(),
-                Password = model.Password
+                Password = model.Password,
+                Role = 2
             };
 
             var json = JsonSerializer.Serialize(loginRequest);
