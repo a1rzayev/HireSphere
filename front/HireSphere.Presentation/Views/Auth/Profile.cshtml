@@ -108,28 +108,9 @@
                                         <span class="input-group-text">
                                             <i class="fas fa-building"></i>
                                         </span>
-                                        <select id="companySelect" class="form-select" onchange="handleCompanyChange()">
-                                            <option value="">-- Select Company --</option>
-                                            <option value="custom">+ Add Custom Company</option>
-                                            @if (ViewBag.Companies != null)
-                                            {
-                                                foreach (var company in ViewBag.Companies)
-                                                {
-                                                    if (Model.Company == company)
-                                                    {
-                                                        <option value="@company" selected>@company</option>
-                                                    }
-                                                    else
-                                                    {
-                                                        <option value="@company">@company</option>
-                                                    }
-                                                }
-                                            }
-                                        </select>
+                                        <input asp-for="Company" class="form-control" placeholder="Enter your company name" />
                                     </div>
-                                    <input asp-for="Company" id="customCompanyInput" class="form-control mt-2" placeholder="Enter custom company name" style="display: none;" />
                                     <span asp-validation-for="Company" class="text-danger"></span>
-                                    <div class="form-text">Choose from existing companies or add a custom one.</div>
                                 </div>
 
 
@@ -167,42 +148,5 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     
-    <script>
-        function handleCompanyChange() {
-            const companySelect = document.getElementById('companySelect');
-            const customCompanyInput = document.getElementById('customCompanyInput');
-            
-            if (companySelect.value === 'custom') {
-                customCompanyInput.style.display = 'block';
-                customCompanyInput.focus();
-                customCompanyInput.value = '';
-            } else {
-                customCompanyInput.style.display = 'none';
-                customCompanyInput.value = companySelect.value;
-            }
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            const companySelect = document.getElementById('companySelect');
-            const customCompanyInput = document.getElementById('customCompanyInput');
-            
-            const currentCompany = '@Model.Company';
-            if (currentCompany && currentCompany.trim() !== '') {
-                let found = false;
-                for (let option of companySelect.options) {
-                    if (option.value === currentCompany) {
-                        companySelect.value = currentCompany;
-                        found = true;
-                        break;
-                    }
-                }
-                
-                if (!found) {
-                    companySelect.value = 'custom';
-                    customCompanyInput.style.display = 'block';
-                    customCompanyInput.value = currentCompany;
-                }
-            }
-        });
-    </script>
+
 }

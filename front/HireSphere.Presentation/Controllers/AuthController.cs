@@ -438,45 +438,7 @@ public class AuthController : Controller
         };
 
 
-        try
-        {
-            var baseUrl = _configuration["BASE_URL"];
-            if (!string.IsNullOrEmpty(baseUrl) && baseUrl != "baseurl")
-            {
-                var companiesRequest = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/api/company");
-                var companiesResponse = await _httpClient.SendAsync(companiesRequest);
-                
-                if (companiesResponse.IsSuccessStatusCode)
-                {
-                    var companiesJson = await companiesResponse.Content.ReadAsStringAsync();
-                    var companies = JsonSerializer.Deserialize<JsonElement>(companiesJson);
-                    
-                    if (companies.ValueKind == JsonValueKind.Array)
-                    {
-                        var companyList = new List<string>();
-                        foreach (var company in companies.EnumerateArray())
-                        {
-                            if (company.TryGetProperty("name", out var name))
-                            {
-                                string companyName = name.ValueKind == JsonValueKind.String 
-                                    ? name.GetString() ?? "" 
-                                    : name.ToString();
-                                if (!string.IsNullOrEmpty(companyName))
-                                {
-                                    companyList.Add(companyName);
-                                }
-                            }
-                        }
-                        ViewBag.Companies = companyList;
-                    }
-                }
-            }
-        }
-        catch (Exception)
-        {
 
-            ViewBag.Companies = new List<string>();
-        }
 
         return View(profile);
     }
