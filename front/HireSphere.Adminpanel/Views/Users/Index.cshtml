@@ -1,0 +1,160 @@
+@{
+    ViewData["Title"] = "Users Management";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-users me-2"></i>Users Management
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>@ViewBag.SuccessMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>@ViewBag.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (ViewBag.Users != null && ViewBag.Users.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Phone</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in ViewBag.Users)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <small class="text-muted">@user.GetProperty("id").GetString()</small>
+                                            </td>
+                                            <td>
+                                                <strong>@(user.GetProperty("name").GetString() ?? "") @(user.GetProperty("surname").GetString() ?? "")</strong>
+                                            </td>
+                                            <td>
+                                                <a href="mailto:@user.GetProperty("email").GetString()" class="text-decoration-none">
+                                                    @user.GetProperty("email").GetString()
+                                                </a>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var roleValue = user.GetProperty("role").GetInt32();
+                                                    var roleName = roleValue switch
+                                                    {
+                                                        0 => "Admin",
+                                                        1 => "Employer",
+                                                        2 => "Job Seeker",
+                                                        _ => "Unknown"
+                                                    };
+                                                    var roleClass = roleValue switch
+                                                    {
+                                                        0 => "badge bg-danger",
+                                                        1 => "badge bg-warning",
+                                                        2 => "badge bg-info",
+                                                        _ => "badge bg-secondary"
+                                                    };
+                                                }
+                                                <span class="@roleClass">@roleName</span>
+                                            </td>
+                                            <td>
+                                                @(user.GetProperty("phone").GetString() ?? "N/A")
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    @if (user.TryGetProperty("createdAt", out JsonElement createdAt))
+                                                    {
+                                                        @createdAt.GetDateTime().ToString("MMM dd, yyyy")
+                                                    }
+                                                    else
+                                                    {
+                                                        @("N/A")
+                                                    }
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="@Url.Action("Details", "Users", new { id = user.GetProperty("id").GetString() })" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                            onclick="confirmDelete('@user.GetProperty("id").GetString()', '@(user.GetProperty("name").GetString() ?? "") @(user.GetProperty("surname").GetString() ?? "")')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No users found</h5>
+                            <p class="text-muted">There are currently no users in the system.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete user <strong id="deleteUserName"></strong>?</p>
+                <p class="text-danger"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(userId, userName) {
+            document.getElementById('deleteUserName').textContent = userName;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete", "Users")/' + userId;
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+}

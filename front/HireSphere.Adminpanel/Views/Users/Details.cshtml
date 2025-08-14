@@ -1,0 +1,222 @@
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">
+                        <i class="fas fa-user me-2"></i>User Details
+                    </h3>
+                    <div>
+                        <a href="@Url.Action("Index", "Users")" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Users
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>@ViewBag.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (ViewBag.User != null)
+                    {
+                        var user = ViewBag.User;
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Full Name:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @(user.GetProperty("name").GetString() ?? "") @(user.GetProperty("surname").GetString() ?? "")
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Email:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <a href="mailto:@user.GetProperty("email").GetString()" class="text-decoration-none">
+                                            @user.GetProperty("email").GetString()
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Role:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @{
+                                            var roleValue = user.GetProperty("role").GetInt32();
+                                            var roleName = roleValue switch
+                                            {
+                                                0 => "Admin",
+                                                1 => "Employer",
+                                                2 => "Job Seeker",
+                                                _ => "Unknown"
+                                            };
+                                            var roleClass = roleValue switch
+                                            {
+                                                0 => "badge bg-danger fs-6",
+                                                1 => "badge bg-warning fs-6",
+                                                2 => "badge bg-info fs-6",
+                                                _ => "badge bg-secondary fs-6"
+                                            };
+                                        }
+                                        <span class="@roleClass">@roleName</span>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Phone:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @if (user.TryGetProperty("phone", out JsonElement phone) && !string.IsNullOrEmpty(phone.GetString()))
+                                        {
+                                            <a href="tel:@phone.GetString()" class="text-decoration-none">
+                                                @phone.GetString()
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not provided</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>User ID:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <code class="text-muted">@user.GetProperty("id").GetString()</code>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Created:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @if (user.TryGetProperty("createdAt", out JsonElement createdAt))
+                                        {
+                                            @createdAt.GetDateTime().ToString("MMMM dd, yyyy 'at' HH:mm")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Unknown</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Email Confirmed:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @if (user.TryGetProperty("isEmailConfirmed", out JsonElement isEmailConfirmed))
+                                        {
+                                            if (isEmailConfirmed.GetBoolean())
+                                            {
+                                                <span class="badge bg-success">Confirmed</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning">Not Confirmed</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Unknown</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-cog me-2"></i>Actions
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <a href="mailto:@user.GetProperty("email").GetString()" class="btn btn-outline-primary">
+                                                <i class="fas fa-envelope me-2"></i>Send Email
+                                            </a>
+                                            
+                                            @if (user.TryGetProperty("phone", out JsonElement phoneNumber) && !string.IsNullOrEmpty(phoneNumber.GetString()))
+                                            {
+                                                <a href="tel:@phoneNumber.GetString()" class="btn btn-outline-success">
+                                                    <i class="fas fa-phone me-2"></i>Call User
+                                                </a>
+                                            }
+                                            
+                                            <button type="button" class="btn btn-outline-danger" 
+                                                    onclick="confirmDelete('@user.GetProperty("id").GetString()', '@(user.GetProperty("name").GetString() ?? "") @(user.GetProperty("surname").GetString() ?? "")')">
+                                                <i class="fas fa-trash me-2"></i>Delete User
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">User not found</h5>
+                            <p class="text-muted">The requested user could not be found or loaded.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete user <strong id="deleteUserName"></strong>?</p>
+                <p class="text-danger"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(userId, userName) {
+            document.getElementById('deleteUserName').textContent = userName;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete", "Users")/' + userId;
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+}
