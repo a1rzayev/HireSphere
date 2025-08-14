@@ -26,6 +26,14 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        @if (Context.Session.GetString("AccessToken") != null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Auth" asp-action="Profile">
+                                    <i class="fas fa-user me-1"></i>Profile
+                                </a>
+                            </li>
+                        }
                     </ul>
                     <ul class="navbar-nav">
                         @if (Context.Session.GetString("AccessToken") != null)
@@ -35,7 +43,7 @@
                                     <i class="fas fa-user me-1"></i>@Context.Session.GetString("UserName")
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="#"><i class="fas fa-user-cog me-2"></i>Profile</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Auth" asp-action="Profile"><i class="fas fa-user-cog me-2"></i>Profile</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
@@ -80,6 +88,11 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/auth.js" asp-append-version="true"></script>
+    <script>
+        function refreshUserData() {
+            location.reload(); 
+        }
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

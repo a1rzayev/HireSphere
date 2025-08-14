@@ -3,6 +3,7 @@ using HireSphere.Presentation.Models;
 using System.Text;
 using System.Text.Json;
 
+
 namespace HireSphere.Presentation.Controllers;
 
 public class AuthController : Controller
@@ -306,6 +307,30 @@ public class AuthController : Controller
 
                             }
                         }
+                        
+                        if (userElement.TryGetProperty("phone", out var phone))
+                        {
+                            string phoneValue = phone.ValueKind == JsonValueKind.String 
+                                ? phone.GetString() ?? "" 
+                                : phone.ToString();
+                            if (!string.IsNullOrEmpty(phoneValue))
+                            {
+                                HttpContext.Session.SetString("UserPhone", phoneValue);
+
+                            }
+                        }
+                        
+                        if (userElement.TryGetProperty("company", out var company))
+                        {
+                            string companyValue = company.ValueKind == JsonValueKind.String 
+                                ? company.GetString() ?? "" 
+                                : company.ToString();
+                            if (!string.IsNullOrEmpty(companyValue))
+                            {
+                                HttpContext.Session.SetString("UserCompany", companyValue);
+
+                            }
+                        }
                     }
 
                     System.Diagnostics.Debug.WriteLine($"Before redirect - TempData.AccessToken: {TempData["AccessToken"]}");
@@ -392,5 +417,222 @@ public class AuthController : Controller
         }
 
         return RedirectToAction("Index", "Home");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Profile()
+    {
+        var accessToken = HttpContext.Session.GetString("AccessToken");
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            return RedirectToAction("Login");
+        }
+
+        var profile = new ProfileViewModel
+        {
+            Name = HttpContext.Session.GetString("UserName")?.Split(' ')[0],
+            Surname = HttpContext.Session.GetString("UserName")?.Split(' ').Length > 1 ? string.Join(" ", HttpContext.Session.GetString("UserName")?.Split(' ').Skip(1) ?? new string[0]) : null,
+            Email = HttpContext.Session.GetString("UserEmail"),
+            PhoneNumber = HttpContext.Session.GetString("UserPhone"),
+            Company = HttpContext.Session.GetString("UserCompany")
+        };
+
+
+
+
+        return View(profile);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Profile(ProfileViewModel model)
+    {
+        try
+        {
+            var accessToken = HttpContext.Session.GetString("AccessToken");
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                return RedirectToAction("Login");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var baseUrl = _configuration["BASE_URL"];
+            
+            if (string.IsNullOrEmpty(baseUrl) || baseUrl == "baseurl")
+            {
+                ViewBag.ErrorMessage = "Configuration error: BASE_URL is not properly configured. Please set BASE_URL in appsettings.json";
+                return View(model);
+            }
+
+            var userId = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userId))
+            {
+                ViewBag.ErrorMessage = "User ID not found in session. Please log in again.";
+                return View(model);
+            }
+
+            var getUserRequest = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/api/user/{userId}");
+            getUserRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            
+            var getUserResponse = await _httpClient.SendAsync(getUserRequest);
+            if (!getUserResponse.IsSuccessStatusCode)
+            {
+                ViewBag.ErrorMessage = "Failed to fetch current user data. Please try again.";
+                return View(model);
+            }
+
+            var currentUserJson = await getUserResponse.Content.ReadAsStringAsync();
+            var currentUser = JsonSerializer.Deserialize<JsonElement>(currentUserJson);
+
+            var currentRoleString = GetJsonValueAsString(currentUser, "role");
+            var currentRole = ParseRole(currentRoleString);
+            
+            var updateRequest = new
+            {
+                name = !string.IsNullOrWhiteSpace(model.Name) ? model.Name.Trim() : "",
+                surname = !string.IsNullOrWhiteSpace(model.Surname) ? model.Surname.Trim() : "",
+                email = !string.IsNullOrWhiteSpace(model.Email) ? model.Email.Trim() : "",
+                phone = !string.IsNullOrWhiteSpace(model.PhoneNumber) ? model.PhoneNumber.Trim() : null,
+                passwordHash = GetJsonValueAsString(currentUser, "passwordHash"),
+                role = currentRole
+            };
+
+            var json = JsonSerializer.Serialize(updateRequest);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var request = new HttpRequestMessage(HttpMethod.Put, $"{baseUrl}/api/user/{userId}");
+            request.Content = content;
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await RefreshUserSessionAsync(userId, accessToken, baseUrl);
+
+                ViewBag.SuccessMessage = "Profile updated successfully!";
+                return View(model);
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            ViewBag.ErrorMessage = $"Failed to update profile: {errorContent}";
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            ViewBag.ErrorMessage = $"An error occurred while updating profile: {ex.Message}";
+            return View(model);
+        }
+    }
+
+    private string GetJsonValueAsString(JsonElement element, string propertyName)
+    {
+        try
+        {
+            if (element.TryGetProperty(propertyName, out var property))
+            {
+                return property.ValueKind switch
+                {
+                    JsonValueKind.String => property.GetString() ?? "",
+                    JsonValueKind.Number => property.GetInt64().ToString(),
+                    JsonValueKind.True => "true",
+                    JsonValueKind.False => "false",
+                    JsonValueKind.Null => "",
+                    _ => property.ToString()
+                };
+            }
+            return "";
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    private int ParseRole(string roleString)
+    {
+        if (string.IsNullOrWhiteSpace(roleString))
+            return 2;
+            
+        roleString = roleString.Trim().Trim('"', '\'');
+        
+        if (int.TryParse(roleString, out var roleNumber))
+        {
+            return roleNumber switch
+            {
+                0 => 0, 
+                1 => 1, 
+                2 => 2, 
+                _ => 2  
+            };
+        }
+        
+        if (roleString.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+            return 0;
+        if (roleString.Equals("Employer", StringComparison.OrdinalIgnoreCase))
+            return 1;
+        if (roleString.Equals("JobSeeker", StringComparison.OrdinalIgnoreCase))
+            return 2;
+        
+        return 2; 
+    }
+
+    private async Task RefreshUserSessionAsync(string userId, string accessToken, string baseUrl)
+    {
+        try
+        {
+            var refreshUserRequest = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/api/user/{userId}");
+            refreshUserRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            
+            var refreshUserResponse = await _httpClient.SendAsync(refreshUserRequest);
+            if (refreshUserResponse.IsSuccessStatusCode)
+            {
+                var refreshUserJson = await refreshUserResponse.Content.ReadAsStringAsync();
+                var refreshUser = JsonSerializer.Deserialize<JsonElement>(refreshUserJson);
+                
+                var updatedName = GetJsonValueAsString(refreshUser, "name");
+                var updatedSurname = GetJsonValueAsString(refreshUser, "surname");
+                var updatedEmail = GetJsonValueAsString(refreshUser, "email");
+                var updatedRole = GetJsonValueAsString(refreshUser, "role");
+                var updatedPhone = GetJsonValueAsString(refreshUser, "phone");
+                var updatedCompany = GetJsonValueAsString(refreshUser, "company");
+                
+                if (!string.IsNullOrWhiteSpace(updatedName) || !string.IsNullOrWhiteSpace(updatedSurname))
+                {
+                    var fullName = $"{updatedName} {updatedSurname}".Trim();
+                    if (!string.IsNullOrWhiteSpace(fullName))
+                    {
+                        HttpContext.Session.SetString("UserName", fullName);
+                    }
+                }
+                
+                if (!string.IsNullOrWhiteSpace(updatedEmail))
+                {
+                    HttpContext.Session.SetString("UserEmail", updatedEmail);
+                }
+                
+                if (!string.IsNullOrWhiteSpace(updatedRole))
+                {
+                    HttpContext.Session.SetString("UserRole", updatedRole);
+                }
+                
+                if (!string.IsNullOrWhiteSpace(updatedPhone))
+                {
+                    HttpContext.Session.SetString("UserPhone", updatedPhone);
+                }
+                
+                if (!string.IsNullOrWhiteSpace(updatedCompany))
+                {
+                    HttpContext.Session.SetString("UserCompany", updatedCompany);
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // Silently fail if refresh fails
+        }
     }
 }
