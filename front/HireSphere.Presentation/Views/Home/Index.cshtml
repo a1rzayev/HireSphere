@@ -17,13 +17,64 @@
         </script>
     }
     
-    @if (TempData["AccessToken"] != null && TempData["RefreshToken"] != null)
-    {
-        <script>
-            console.log('Storing tokens from TempData to localStorage...');
-            localStorage.setItem('accessToken', '@TempData["AccessToken"]');
-            localStorage.setItem('refreshToken', '@TempData["RefreshToken"]');
-            console.log('Tokens stored successfully!');
-        </script>
+    @{
+        var accessToken = Context.Session.GetString("AccessToken");
+        var refreshToken = Context.Session.GetString("RefreshToken");
     }
+    
+    <script>
+        console.log('Token persistence check starting...');
+        
+        const storedAccessToken = localStorage.getItem('accessToken');
+        const storedRefreshToken = localStorage.getItem('refreshToken');
+        
+        console.log('Stored tokens in localStorage:', {
+            accessToken: storedAccessToken ? 'Present' : 'Not present',
+            refreshToken: storedRefreshToken ? 'Present' : 'Not present'
+        });
+        
+        const sessionAccessToken = '@accessToken';
+        const sessionRefreshToken = '@refreshToken';
+        
+        console.log('Tokens in Session:', {
+            accessToken: sessionAccessToken ? 'Present' : 'Not present',
+            refreshToken: sessionRefreshToken ? 'Present' : 'Not present'
+        });
+        
+        let finalAccessToken = storedAccessToken;
+        let finalRefreshToken = storedRefreshToken;
+        
+        if ((!storedAccessToken || !storedRefreshToken) && sessionAccessToken && sessionRefreshToken) {
+            console.log('localStorage empty, using Session tokens...');
+            finalAccessToken = sessionAccessToken;
+            finalRefreshToken = sessionRefreshToken;
+            
+            localStorage.setItem('accessToken', sessionAccessToken);
+            localStorage.setItem('refreshToken', sessionRefreshToken);
+            console.log('Tokens copied from Session to localStorage');
+        }
+        else if (storedAccessToken && storedRefreshToken && sessionAccessToken && sessionRefreshToken) {
+            if (storedAccessToken !== sessionAccessToken || storedRefreshToken !== sessionRefreshToken) {
+                console.log('Tokens differ between localStorage and Session, updating localStorage...');
+                finalAccessToken = sessionAccessToken;
+                finalRefreshToken = sessionRefreshToken;
+                
+                localStorage.setItem('accessToken', sessionAccessToken);
+                localStorage.setItem('refreshToken', sessionRefreshToken);
+                console.log('localStorage updated with Session tokens');
+            } else {
+                console.log('Tokens are identical, no update needed');
+            }
+        }
+        
+        if (finalAccessToken && finalRefreshToken) {
+            console.log('Final token status: Both tokens available');
+            console.log('localStorage accessToken:', localStorage.getItem('accessToken'));
+            console.log('localStorage refreshToken:', localStorage.getItem('refreshToken'));
+        } else {
+            console.log('Final token status: Missing tokens - user needs to login');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+        }
+    </script>
 }

@@ -226,8 +226,7 @@ public class AuthController : Controller
                         if (!string.IsNullOrEmpty(token))
                         {
                             HttpContext.Session.SetString("AccessToken", token);
-                            TempData["AccessToken"] = token;
-                            System.Diagnostics.Debug.WriteLine($"Setting TempData.AccessToken: {token}");
+                            System.Diagnostics.Debug.WriteLine($"Setting Session.AccessToken: {token}");
                         }
                     }
                     
@@ -240,8 +239,7 @@ public class AuthController : Controller
                         if (!string.IsNullOrEmpty(refresh))
                         {
                             HttpContext.Session.SetString("RefreshToken", refresh);
-                            TempData["RefreshToken"] = refresh;
-                            System.Diagnostics.Debug.WriteLine($"Setting TempData.RefreshToken: {refresh}");
+                            System.Diagnostics.Debug.WriteLine($"Setting Session.RefreshToken: {refresh}");
                         }
                     }
                     
@@ -334,8 +332,8 @@ public class AuthController : Controller
                         }
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"Before redirect - TempData.AccessToken: {TempData["AccessToken"]}");
-                    System.Diagnostics.Debug.WriteLine($"Before redirect - TempData.RefreshToken: {TempData["RefreshToken"]}");
+                    System.Diagnostics.Debug.WriteLine($"Before redirect - Session.AccessToken: {HttpContext.Session.GetString("AccessToken")}");
+                    System.Diagnostics.Debug.WriteLine($"Before redirect - Session.RefreshToken: {HttpContext.Session.GetString("RefreshToken")}");
 
                     return RedirectToAction("Index", "Home");
                 }
