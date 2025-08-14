@@ -1,0 +1,245 @@
+@model HireSphere.Presentation.Models.CompanyListViewModel
+@{
+    ViewData["Title"] = "Companies";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-building fa-2x me-3"></i>
+                            <div>
+                                <h3 class="mb-0">Companies</h3>
+                                <p class="mb-0">Discover and manage companies</p>
+                            </div>
+                        </div>
+                        @if (Context.Session.GetString("AccessToken") != null)
+                        {
+                            <a asp-action="Create" class="btn btn-light">
+                                <i class="fas fa-plus me-2"></i>Add Company
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Search and Filter Section -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <form method="get" class="row g-3">
+                                <div class="col-md-5">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-search"></i>
+                                        </span>
+                                        <input type="text" name="searchTerm" class="form-control" placeholder="Search companies..." value="@Model.SearchTerm" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </span>
+                                        <input type="text" name="location" class="form-control" placeholder="Filter by location..." value="@Model.LocationFilter" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-filter me-2"></i>Filter
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                                <i class="fas fa-undo me-2"></i>Clear Filters
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Success/Error Messages -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @ViewBag.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <!-- Companies List -->
+                    @if (Model.Companies.Any())
+                    {
+                        <div class="row">
+                            @foreach (var company in Model.Companies)
+                            {
+                                <div class="col-lg-4 col-md-6 mb-4">
+                                    <div class="card h-100 shadow-sm border-0">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-start mb-3">
+                                                @if (!string.IsNullOrEmpty(company.LogoUrl))
+                                                {
+                                                    <img src="@company.LogoUrl" alt="@company.Name Logo" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                                        <i class="fas fa-building fa-2x text-muted"></i>
+                                                    </div>
+                                                }
+                                                <div class="flex-grow-1">
+                                                    <h5 class="card-title mb-1">@company.Name</h5>
+                                                    @if (!string.IsNullOrEmpty(company.Location))
+                                                    {
+                                                        <p class="text-muted mb-0">
+                                                            <i class="fas fa-map-marker-alt me-1"></i>@company.Location
+                                                        </p>
+                                                    }
+                                                </div>
+                                            </div>
+
+                                            <p class="card-text text-muted">
+                                                @(company.Description.Length > 100 ? company.Description.Substring(0, 100) + "..." : company.Description)
+                                            </p>
+
+                                            @if (!string.IsNullOrEmpty(company.Website))
+                                            {
+                                                <div class="mb-3">
+                                                    <a href="@company.Website" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-external-link-alt me-1"></i>Visit Website
+                                                    </a>
+                                                </div>
+                                            }
+
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    @(company.CreatedAt?.ToString("MMM yyyy") ?? "N/A")
+                                                </small>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="Details" asp-route-id="@company.Id" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye me-1"></i>View
+                                                    </a>
+                                                    @if (Context.Session.GetString("AccessToken") != null)
+                                                    {
+                                                        <a asp-action="Edit" asp-route-id="@company.Id" class="btn btn-sm btn-outline-warning">
+                                                            <i class="fas fa-edit me-1"></i>Edit
+                                                        </a>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete('@company.Id', '@company.Name')">
+                                                            <i class="fas fa-trash me-1"></i>Delete
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Pagination -->
+                        @if (Model.TotalCount > Model.PageSize)
+                        {
+                            <nav aria-label="Companies pagination">
+                                <ul class="pagination justify-content-center">
+                                    @if (Model.CurrentPage > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage - 1, searchTerm = Model.SearchTerm, location = Model.LocationFilter })">
+                                                <i class="fas fa-chevron-left"></i> Previous
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.CurrentPage + 2, (Model.TotalCount + Model.PageSize - 1) / Model.PageSize); i++)
+                                    {
+                                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("Index", new { page = i, searchTerm = Model.SearchTerm, location = Model.LocationFilter })">@i</a>
+                                        </li>
+                                    }
+
+                                    @if (Model.CurrentPage < (Model.TotalCount + Model.PageSize - 1) / Model.PageSize)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage + 1, searchTerm = Model.SearchTerm, location = Model.LocationFilter })">
+                                                Next <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-building fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">No companies found</h4>
+                            <p class="text-muted">Try adjusting your search criteria or add a new company.</p>
+                            @if (Context.Session.GetString("AccessToken") != null)
+                            {
+                                <a asp-action="Create" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Add Your First Company
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="companyNameToDelete"></strong>? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(companyId, companyName) {
+            document.getElementById('companyNameToDelete').textContent = companyName;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete")/' + companyId;
+            
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+}

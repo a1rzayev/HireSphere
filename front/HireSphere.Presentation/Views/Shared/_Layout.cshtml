@@ -26,6 +26,11 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Company" asp-action="Index">
+                                <i class="fas fa-building me-1"></i>Companies
+                            </a>
+                        </li>
                         @if (Context.Session.GetString("AccessToken") != null)
                         {
                             <li class="nav-item">
