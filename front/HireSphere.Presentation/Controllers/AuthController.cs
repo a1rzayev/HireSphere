@@ -393,4 +393,88 @@ public class AuthController : Controller
 
         return RedirectToAction("Index", "Home");
     }
+
+    [HttpGet]
+    public IActionResult Profile()
+    {
+        var accessToken = HttpContext.Session.GetString("AccessToken");
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            return RedirectToAction("Login");
+        }
+
+        var profile = new ProfileViewModel
+        {
+            Name = HttpContext.Session.GetString("UserName")?.Split(' ')[0] ?? "",
+            Surname = HttpContext.Session.GetString("UserName")?.Split(' ').Length > 1 ? string.Join(" ", HttpContext.Session.GetString("UserName")?.Split(' ').Skip(1) ?? new string[0]) : "",
+            Email = HttpContext.Session.GetString("UserEmail") ?? ""
+        };
+
+        return View(profile);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Profile(ProfileViewModel model)
+    {
+        try
+        {
+            var accessToken = HttpContext.Session.GetString("AccessToken");
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                return RedirectToAction("Login");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var baseUrl = _configuration["BASE_URL"];
+            
+            if (string.IsNullOrEmpty(baseUrl) || baseUrl == "baseurl")
+            {
+                ViewBag.ErrorMessage = "Configuration error: BASE_URL is not properly configured. Please set BASE_URL in appsettings.json";
+                return View(model);
+            }
+
+            var updateRequest = new
+            {
+                Name = model.Name.Trim(),
+                Surname = model.Surname.Trim(),
+                Email = model.Email.Trim(),
+                PhoneNumber = model.PhoneNumber?.Trim(),
+                Bio = model.Bio?.Trim(),
+                Location = model.Location?.Trim(),
+                Website = model.Website?.Trim(),
+                Company = model.Company?.Trim()
+            };
+
+            var json = JsonSerializer.Serialize(updateRequest);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var request = new HttpRequestMessage(HttpMethod.Put, $"{baseUrl}/api/user/profile");
+            request.Content = content;
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                HttpContext.Session.SetString("UserName", $"{model.Name} {model.Surname}".Trim());
+                HttpContext.Session.SetString("UserEmail", model.Email);
+
+                ViewBag.SuccessMessage = "Profile updated successfully!";
+                return View(model);
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            ViewBag.ErrorMessage = $"Failed to update profile: {errorContent}";
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            ViewBag.ErrorMessage = $"An error occurred while updating profile: {ex.Message}";
+            return View(model);
+        }
+    }
 }
