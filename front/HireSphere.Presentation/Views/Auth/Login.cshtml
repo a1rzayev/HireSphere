@@ -27,8 +27,9 @@
                                 <span class="input-group-text">
                                     <i class="fas fa-envelope"></i>
                                 </span>
-                                <input asp-for="Email" class="form-control" placeholder="Enter your email" required />
+                                <input asp-for="Email" type="email" class="form-control" placeholder="Enter your email" required />
                             </div>
+                            <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
@@ -37,8 +38,9 @@
                                 <span class="input-group-text">
                                     <i class="fas fa-lock"></i>
                                 </span>
-                                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" required />
+                                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" required minlength="6" />
                             </div>
+                            <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3 form-check">
@@ -64,3 +66,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

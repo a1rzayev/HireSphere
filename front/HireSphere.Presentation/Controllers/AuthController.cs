@@ -33,6 +33,42 @@ public class AuthController : Controller
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(model.Name))
+            {
+                ViewBag.ErrorMessage = "First name is required.";
+                return View(model);
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Surname))
+            {
+                ViewBag.ErrorMessage = "Last name is required.";
+                return View(model);
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Email))
+            {
+                ViewBag.ErrorMessage = "Email is required.";
+                return View(model);
+            }
+
+            if (!IsValidEmail(model.Email))
+            {
+                ViewBag.ErrorMessage = "Please enter a valid email address.";
+                return View(model);
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Password))
+            {
+                ViewBag.ErrorMessage = "Password is required.";
+                return View(model);
+            }
+
+            if (model.Password.Length < 6)
+            {
+                ViewBag.ErrorMessage = "Password must be at least 6 characters long.";
+                return View(model);
+            }
+
             if (model.Password != model.ConfirmPassword)
             {
                 ViewBag.ErrorMessage = "Passwords do not match.";
@@ -40,11 +76,17 @@ public class AuthController : Controller
             }
 
             var baseUrl = _configuration["BASE_URL"];
+            
+            if (string.IsNullOrEmpty(baseUrl) || baseUrl == "baseurl")
+            {
+                ViewBag.ErrorMessage = "Configuration error: BASE_URL is not properly configured.";
+                return View(model);
+            }
             var registerRequest = new
             {
-                Name = model.Name,
-                Surname = model.Surname,
-                Email = model.Email,
+                Name = model.Name.Trim(),
+                Surname = model.Surname.Trim(),
+                Email = model.Email.Trim(),
                 Password = model.Password,
                 ConfirmPassword = model.ConfirmPassword
             };
@@ -76,10 +118,35 @@ public class AuthController : Controller
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(model.Email))
+            {
+                ViewBag.ErrorMessage = "Email is required.";
+                return View(model);
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Password))
+            {
+                ViewBag.ErrorMessage = "Password is required.";
+                return View(model);
+            }
+
+            if (!IsValidEmail(model.Email))
+            {
+                ViewBag.ErrorMessage = "Please enter a valid email address.";
+                return View(model);
+            }
+
             var baseUrl = _configuration["BASE_URL"];
+            
+            if (string.IsNullOrEmpty(baseUrl) || baseUrl == "baseurl")
+            {
+                ViewBag.ErrorMessage = "Configuration error: BASE_URL is not properly configured.";
+                return View(model);
+            }
+            
             var loginRequest = new
             {
-                Email = model.Email,
+                Email = model.Email.Trim(),
                 Password = model.Password
             };
 
@@ -95,47 +162,92 @@ public class AuthController : Controller
 
                 if (authResponse.TryGetProperty("accessToken", out var accessToken))
                 {
-                    HttpContext.Session.SetString("AccessToken", accessToken.GetString() ?? "");
+                    string token = accessToken.ValueKind == JsonValueKind.String 
+                        ? accessToken.GetString() ?? "" 
+                        : accessToken.ToString();
+                    HttpContext.Session.SetString("AccessToken", token);
                 }
                 
                 if (authResponse.TryGetProperty("refreshToken", out var refreshToken))
                 {
-                    HttpContext.Session.SetString("RefreshToken", refreshToken.GetString() ?? "");
+                    string refresh = refreshToken.ValueKind == JsonValueKind.String 
+                        ? refreshToken.GetString() ?? "" 
+                        : refreshToken.ToString();
+                    HttpContext.Session.SetString("RefreshToken", refresh);
                 }
                 
                 if (authResponse.TryGetProperty("user", out var userElement))
                 {
                     if (userElement.TryGetProperty("id", out var id))
                     {
-                        HttpContext.Session.SetString("UserId", id.GetString() ?? "");
+                        string userId = id.ValueKind == JsonValueKind.String 
+                            ? id.GetString() ?? "" 
+                            : id.ToString();
+                        HttpContext.Session.SetString("UserId", userId);
                     }
                     
-                    if (userElement.TryGetProperty("name", out var name) && userElement.TryGetProperty("surname", out var surname))
+                    if (userElement.TryGetProperty("name", out var name))
                     {
-                        HttpContext.Session.SetString("UserName", $"{name.GetString()} {surname.GetString()}");
+                        string nameValue = name.ValueKind == JsonValueKind.String 
+                            ? name.GetString() ?? "" 
+                            : name.ToString();
+                        
+                        if (userElement.TryGetProperty("surname", out var surname))
+                        {
+                            string surnameValue = surname.ValueKind == JsonValueKind.String 
+                                ? surname.GetString() ?? "" 
+                                : surname.ToString();
+                            
+                            string userName = $"{nameValue} {surnameValue}".Trim();
+                            HttpContext.Session.SetString("UserName", userName);
+                        }
+                        else
+                        {
+                            HttpContext.Session.SetString("UserName", nameValue);
+                        }
                     }
                     
                     if (userElement.TryGetProperty("email", out var email))
                     {
-                        HttpContext.Session.SetString("UserEmail", email.GetString() ?? "");
+                        string emailValue = email.ValueKind == JsonValueKind.String 
+                            ? email.GetString() ?? "" 
+                            : email.ToString();
+                        HttpContext.Session.SetString("UserEmail", emailValue);
                     }
                     
                     if (userElement.TryGetProperty("role", out var role))
                     {
-                        HttpContext.Session.SetString("UserRole", role.GetString() ?? "");
+                        string roleValue = role.ValueKind == JsonValueKind.String 
+                            ? role.GetString() ?? "" 
+                            : role.ToString();
+                        HttpContext.Session.SetString("UserRole", roleValue);
                     }
                 }
 
                 return RedirectToAction("Index", "Home");
             }
 
-            ViewBag.ErrorMessage = "Login failed. Please check your credentials.";
+            var errorContent = await response.Content.ReadAsStringAsync();
+            ViewBag.ErrorMessage = $"Login failed: {errorContent}";
             return View(model);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            ViewBag.ErrorMessage = "An error occurred during login.";
+            ViewBag.ErrorMessage = $"An error occurred during login: {ex.Message}";
             return View(model);
+        }
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
         }
     }
 
