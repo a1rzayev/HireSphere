@@ -1,7 +1,26 @@
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsDevelopment())
+{
+    Console.WriteLine("Running in Development mode");
+}
+else
+{
+    builder.Environment.EnvironmentName = "Development";
+    Console.WriteLine("Forced to Development mode");
+}
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -17,6 +36,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthorization();
 
