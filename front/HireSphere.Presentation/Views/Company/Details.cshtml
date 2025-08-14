@@ -1,0 +1,217 @@
+@model HireSphere.Presentation.Models.CompanyViewModel
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                            {
+                                <img src="@Model.LogoUrl" alt="@Model.Name Logo" class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-building fa-3x text-muted"></i>
+                                </div>
+                            }
+                            <div>
+                                <h2 class="mb-0">@Model.Name</h2>
+                                @if (!string.IsNullOrEmpty(Model.Location))
+                                {
+                                    <p class="mb-0">
+                                        <i class="fas fa-map-marker-alt me-2"></i>@Model.Location
+                                    </p>
+                                }
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a asp-action="Index" class="btn btn-light">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Companies
+                            </a>
+                            @if (Context.Session.GetString("AccessToken") != null)
+                            {
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                                    <i class="fas fa-edit me-2"></i>Edit
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row">
+                        <!-- Company Description -->
+                        <div class="col-lg-8">
+                            <div class="mb-4">
+                                <h4 class="text-primary mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>About @Model.Name
+                                </h4>
+                                <div class="bg-light p-3 rounded">
+                                    <p class="mb-0">@Model.Description</p>
+                                </div>
+                            </div>
+
+                            <!-- Company Details -->
+                            <div class="row">
+                                @if (!string.IsNullOrEmpty(Model.Website))
+                                {
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card border-0 bg-light">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-globe fa-2x text-primary mb-2"></i>
+                                                <h6>Website</h6>
+                                                <a href="@Model.Website" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-external-link-alt me-1"></i>Visit Website
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(Model.Location))
+                                {
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card border-0 bg-light">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-map-marker-alt fa-2x text-success mb-2"></i>
+                                                <h6>Location</h6>
+                                                <p class="mb-0">@Model.Location</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Company Stats -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body">
+                                            <h6 class="text-muted mb-3">Company Information</h6>
+                                            <div class="row text-center">
+                                                <div class="col-md-4">
+                                                    <div class="border-end">
+                                                        <h4 class="text-primary mb-1">@Model.CreatedAt?.ToString("yyyy")</h4>
+                                                        <small class="text-muted">Founded</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="border-end">
+                                                        <h4 class="text-success mb-1">Active</h4>
+                                                        <small class="text-muted">Status</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <h4 class="text-info mb-1">Open</h4>
+                                                    <small class="text-muted">For Business</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar -->
+                        <div class="col-lg-4">
+                            <!-- Quick Actions -->
+                            <div class="card border-0 bg-light mb-4">
+                                <div class="card-header bg-transparent">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        @if (Context.Session.GetString("AccessToken") != null)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                                                <i class="fas fa-edit me-2"></i>Edit Company
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger" onclick="confirmDelete('@Model.Id', '@Model.Name')">
+                                                <i class="fas fa-trash me-2"></i>Delete Company
+                                            </button>
+                                        }
+                                        <a href="#" class="btn btn-outline-primary">
+                                            <i class="fas fa-briefcase me-2"></i>View Jobs
+                                        </a>
+                                        <a href="#" class="btn btn-outline-success">
+                                            <i class="fas fa-users me-2"></i>Contact Company
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Company Details -->
+                            <div class="card border-0 bg-light">
+                                <div class="card-header bg-transparent">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-clipboard-list me-2"></i>Company Details
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2">
+                                            <strong>Company ID:</strong><br>
+                                            <small class="text-muted">@Model.Id</small>
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Created:</strong><br>
+                                            <small class="text-muted">@(Model.CreatedAt?.ToString("MMMM dd, yyyy") ?? "N/A")</small>
+                                        </li>
+                                        @if (Model.OwnerUserId.HasValue)
+                                        {
+                                            <li class="mb-2">
+                                                <strong>Owner ID:</strong><br>
+                                                <small class="text-muted">@Model.OwnerUserId</small>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="companyNameToDelete"></strong>? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(companyId, companyName) {
+            document.getElementById('companyNameToDelete').textContent = companyName;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete")/' + companyId;
+            
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+}

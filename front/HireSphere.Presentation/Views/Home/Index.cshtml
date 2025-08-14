@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+@section Scripts {
+    @if (ViewBag.ClearLocalStorage == true)
+    {
+        <script>
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            console.log('Tokens cleared from localStorage');
+        </script>
+    }
+    
+    @if (TempData["AccessToken"] != null && TempData["RefreshToken"] != null)
+    {
+        <script>
+            console.log('Storing tokens from TempData to localStorage...');
+            localStorage.setItem('accessToken', '@TempData["AccessToken"]');
+            localStorage.setItem('refreshToken', '@TempData["RefreshToken"]');
+            console.log('Tokens stored successfully!');
+        </script>
+    }
+}

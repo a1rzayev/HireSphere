@@ -28,4 +28,4 @@ project.fragment.lock.json
 artifacts/
 
 # Exclude appsettings.Development.json if it contains secrets
-HideSphere.Presentation/appsettings.Development.json
+HireSphere.Presentation/appsettings.Development.json
