@@ -20,20 +20,6 @@ public class ProfileViewModel
     [Phone(ErrorMessage = "Please enter a valid phone number")]
     public string? PhoneNumber { get; set; }
 
-    [Display(Name = "Bio")]
-    [StringLength(500, ErrorMessage = "Bio cannot exceed 500 characters")]
-    public string? Bio { get; set; }
-
-    [Display(Name = "Location")]
-    [StringLength(100, ErrorMessage = "Location cannot exceed 100 characters")]
-    public string? Location { get; set; }
-
-    [Display(Name = "Website")]
-    [Url(ErrorMessage = "Please enter a valid URL")]
-    public string? Website { get; set; }
-
-
-
     [Display(Name = "Company")]
     [StringLength(100, ErrorMessage = "Company cannot exceed 100 characters")]
     public string? Company { get; set; }

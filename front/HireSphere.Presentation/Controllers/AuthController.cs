@@ -307,6 +307,30 @@ public class AuthController : Controller
 
                             }
                         }
+                        
+                        if (userElement.TryGetProperty("phone", out var phone))
+                        {
+                            string phoneValue = phone.ValueKind == JsonValueKind.String 
+                                ? phone.GetString() ?? "" 
+                                : phone.ToString();
+                            if (!string.IsNullOrEmpty(phoneValue))
+                            {
+                                HttpContext.Session.SetString("UserPhone", phoneValue);
+
+                            }
+                        }
+                        
+                        if (userElement.TryGetProperty("company", out var company))
+                        {
+                            string companyValue = company.ValueKind == JsonValueKind.String 
+                                ? company.GetString() ?? "" 
+                                : company.ToString();
+                            if (!string.IsNullOrEmpty(companyValue))
+                            {
+                                HttpContext.Session.SetString("UserCompany", companyValue);
+
+                            }
+                        }
                     }
 
                     System.Diagnostics.Debug.WriteLine($"Before redirect - TempData.AccessToken: {TempData["AccessToken"]}");
@@ -408,7 +432,9 @@ public class AuthController : Controller
         {
             Name = HttpContext.Session.GetString("UserName")?.Split(' ')[0],
             Surname = HttpContext.Session.GetString("UserName")?.Split(' ').Length > 1 ? string.Join(" ", HttpContext.Session.GetString("UserName")?.Split(' ').Skip(1) ?? new string[0]) : null,
-            Email = HttpContext.Session.GetString("UserEmail")
+            Email = HttpContext.Session.GetString("UserEmail"),
+            PhoneNumber = HttpContext.Session.GetString("UserPhone"),
+            Company = HttpContext.Session.GetString("UserCompany")
         };
 
 
@@ -523,17 +549,7 @@ public class AuthController : Controller
 
             if (response.IsSuccessStatusCode)
             {
-                var userName = $"{model.Name ?? ""} {model.Surname ?? ""}".Trim();
-                var userEmail = model.Email ?? "";
-                
-                if (!string.IsNullOrWhiteSpace(userName))
-                {
-                    HttpContext.Session.SetString("UserName", userName);
-                }
-                if (!string.IsNullOrWhiteSpace(userEmail))
-                {
-                    HttpContext.Session.SetString("UserEmail", userEmail);
-                }
+                await RefreshUserSessionAsync(userId, accessToken, baseUrl);
 
                 ViewBag.SuccessMessage = "Profile updated successfully!";
                 return View(model);
@@ -600,5 +616,61 @@ public class AuthController : Controller
             return 2;
         
         return 2; 
+    }
+
+    private async Task RefreshUserSessionAsync(string userId, string accessToken, string baseUrl)
+    {
+        try
+        {
+            var refreshUserRequest = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/api/user/{userId}");
+            refreshUserRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            
+            var refreshUserResponse = await _httpClient.SendAsync(refreshUserRequest);
+            if (refreshUserResponse.IsSuccessStatusCode)
+            {
+                var refreshUserJson = await refreshUserResponse.Content.ReadAsStringAsync();
+                var refreshUser = JsonSerializer.Deserialize<JsonElement>(refreshUserJson);
+                
+                var updatedName = GetJsonValueAsString(refreshUser, "name");
+                var updatedSurname = GetJsonValueAsString(refreshUser, "surname");
+                var updatedEmail = GetJsonValueAsString(refreshUser, "email");
+                var updatedRole = GetJsonValueAsString(refreshUser, "role");
+                var updatedPhone = GetJsonValueAsString(refreshUser, "phone");
+                var updatedCompany = GetJsonValueAsString(refreshUser, "company");
+                
+                if (!string.IsNullOrWhiteSpace(updatedName) || !string.IsNullOrWhiteSpace(updatedSurname))
+                {
+                    var fullName = $"{updatedName} {updatedSurname}".Trim();
+                    if (!string.IsNullOrWhiteSpace(fullName))
+                    {
+                        HttpContext.Session.SetString("UserName", fullName);
+                    }
+                }
+                
+                if (!string.IsNullOrWhiteSpace(updatedEmail))
+                {
+                    HttpContext.Session.SetString("UserEmail", updatedEmail);
+                }
+                
+                if (!string.IsNullOrWhiteSpace(updatedRole))
+                {
+                    HttpContext.Session.SetString("UserRole", updatedRole);
+                }
+                
+                if (!string.IsNullOrWhiteSpace(updatedPhone))
+                {
+                    HttpContext.Session.SetString("UserPhone", updatedPhone);
+                }
+                
+                if (!string.IsNullOrWhiteSpace(updatedCompany))
+                {
+                    HttpContext.Session.SetString("UserCompany", updatedCompany);
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // Silently fail if refresh fails
+        }
     }
 }

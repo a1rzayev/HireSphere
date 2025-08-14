@@ -25,6 +25,11 @@
                             @ViewBag.SuccessMessage
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
+                        <script>
+                            setTimeout(function() {
+                                refreshUserData();
+                            }, 2000);
+                        </script>
                     }
 
                     @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
@@ -110,7 +115,14 @@
                                             {
                                                 foreach (var company in ViewBag.Companies)
                                                 {
-                                                    <option value="@company">@company</option>
+                                                    if (Model.Company == company)
+                                                    {
+                                                        <option value="@company" selected>@company</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@company">@company</option>
+                                                    }
                                                 }
                                             }
                                         </select>
@@ -120,45 +132,11 @@
                                     <div class="form-text">Choose from existing companies or add a custom one.</div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label asp-for="Location" class="form-label"></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">
-                                            <i class="fas fa-map-marker-alt"></i>
-                                        </span>
-                                        <input asp-for="Location" class="form-control" placeholder="e.g., New York, NY" />
-                                    </div>
-                                    <span asp-validation-for="Location" class="text-danger"></span>
-                                </div>
 
-                                <div class="mb-3">
-                                    <label asp-for="Website" class="form-label"></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">
-                                            <i class="fas fa-globe"></i>
-                                        </span>
-                                        <input asp-for="Website" class="form-control" placeholder="https://yourwebsite.com" />
-                                    </div>
-                                    <span asp-validation-for="Website" class="text-danger"></span>
-                                </div>
                             </div>
                         </div>
 
-                        <!-- Bio Section -->
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <h5 class="text-primary mb-3">
-                                    <i class="fas fa-edit me-2"></i>About Me
-                                </h5>
-                                
-                                <div class="mb-3">
-                                    <label asp-for="Bio" class="form-label"></label>
-                                    <textarea asp-for="Bio" class="form-control" rows="4" placeholder="Tell us about yourself, your skills, experience, and what you're looking for..."></textarea>
-                                    <span asp-validation-for="Bio" class="text-danger"></span>
-                                    <div class="form-text">Share your story, skills, and what makes you unique.</div>
-                                </div>
-                            </div>
-                        </div>
+
 
                         <!-- Action Buttons -->
                         <div class="row mt-4">
@@ -208,8 +186,22 @@
             const companySelect = document.getElementById('companySelect');
             const customCompanyInput = document.getElementById('customCompanyInput');
             
-            if (companySelect.value && companySelect.value !== 'custom') {
-                customCompanyInput.value = companySelect.value;
+            const currentCompany = '@Model.Company';
+            if (currentCompany && currentCompany.trim() !== '') {
+                let found = false;
+                for (let option of companySelect.options) {
+                    if (option.value === currentCompany) {
+                        companySelect.value = currentCompany;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) {
+                    companySelect.value = 'custom';
+                    customCompanyInput.style.display = 'block';
+                    customCompanyInput.value = currentCompany;
+                }
             }
         });
     </script>
