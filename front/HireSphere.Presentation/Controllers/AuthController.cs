@@ -45,7 +45,8 @@ public class AuthController : Controller
                 Name = model.Name,
                 Surname = model.Surname,
                 Email = model.Email,
-                Password = model.Password
+                Password = model.Password,
+                ConfirmPassword = model.ConfirmPassword
             };
 
             var json = JsonSerializer.Serialize(registerRequest);
