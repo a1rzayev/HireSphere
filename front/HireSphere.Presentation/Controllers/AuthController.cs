@@ -22,6 +22,54 @@ public class AuthController : Controller
         return View();
     }
 
+    [HttpGet]
+    public IActionResult Register()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Register(RegisterViewModel model)
+    {
+        try
+        {
+            if (model.Password != model.ConfirmPassword)
+            {
+                ViewBag.ErrorMessage = "Passwords do not match.";
+                return View(model);
+            }
+
+            var baseUrl = _configuration["BASE_URL"];
+            var registerRequest = new
+            {
+                Name = model.Name,
+                Surname = model.Surname,
+                Email = model.Email,
+                Password = model.Password
+            };
+
+            var json = JsonSerializer.Serialize(registerRequest);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync($"{baseUrl}/api/auth/register", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                ViewBag.SuccessMessage = "Registration successful! Please log in with your new account.";
+                return RedirectToAction("Login");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            ViewBag.ErrorMessage = $"Registration failed: {errorContent}";
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            ViewBag.ErrorMessage = $"An error occurred during registration: {ex.Message}";
+            return View(model);
+        }
+    }
+
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
