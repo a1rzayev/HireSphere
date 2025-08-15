@@ -135,7 +135,7 @@ public class AuthController : Controller
                         
                         if (!string.IsNullOrEmpty(token))
                         {
-                            HttpContext.Session.SetString("AccessToken", token);
+                            // HttpContext.Session.SetString("AccessToken", token);
                             TempData["AccessToken"] = token;
                             System.Diagnostics.Debug.WriteLine($"Setting TempData.AccessToken: {token}");
                         }
@@ -159,7 +159,7 @@ public class AuthController : Controller
                         
                         if (!string.IsNullOrEmpty(refresh))
                         {
-                            HttpContext.Session.SetString("RefreshToken", refresh);
+                            // HttpContext.Session.SetString("RefreshToken", refresh);
                             TempData["RefreshToken"] = refresh;
                             System.Diagnostics.Debug.WriteLine($"Setting TempData.RefreshToken: {refresh}");
                         }
