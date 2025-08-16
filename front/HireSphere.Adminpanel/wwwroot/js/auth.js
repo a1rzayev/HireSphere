@@ -37,13 +37,33 @@ const AuthUtils = {
             console.log('Error calling backend logout, but continuing with frontend cleanup:', error);
         }
         
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        console.log('Admin tokens cleared from localStorage');
+        // Clear both localStorage and session
+        this.clearAllTokens();
         
+        // Update navigation
         updateNavigationVisibility();
         
-        window.location.reload();
+        // Redirect to login page
+        window.location.href = '/Auth/Login';
+    },
+
+    clearAllTokens: function() {
+        // Clear localStorage
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        console.log('localStorage tokens cleared');
+        
+        // Clear session by calling logout endpoint
+        fetch('/Auth/Logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).then(() => {
+            console.log('Session cleared via logout endpoint');
+        }).catch(error => {
+            console.log('Error clearing session:', error);
+        });
     },
 
     isTokenExpired: function() {
@@ -82,57 +102,44 @@ const AuthUtils = {
     }
 };
 
-if (window.authInitialized) {
-    console.log('Auth already initialized, skipping...');
-} else {
-    window.authInitialized = true;
+// Initialize authentication on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Auth initialization - checking authentication status...');
+    console.log('localStorage accessToken:', localStorage.getItem('accessToken') ? 'Present' : 'Not present');
+    console.log('localStorage refreshToken:', localStorage.getItem('refreshToken') ? 'Present' : 'Not present');
     
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM Content Loaded - Checking authentication status...');
-        console.log('localStorage accessToken:', localStorage.getItem('accessToken') ? 'Present' : 'Not present');
-        console.log('localStorage refreshToken:', localStorage.getItem('refreshToken') ? 'Present' : 'Not present');
-        
-        updateNavigationVisibility();
-        
-        if (AuthUtils.isLoggedIn()) {
-            console.log('Admin user is logged in with valid tokens');
-        } else {
-            console.log('Admin user is not logged in');
-        }
-    });
-}
-
-let navigationUpdateCount = 0;
-let lastNavigationState = null;
+    updateNavigationVisibility();
+    
+    if (AuthUtils.isLoggedIn()) {
+        console.log('Admin user is logged in with valid tokens');
+    } else {
+        console.log('Admin user is not logged in');
+    }
+});
 
 function updateNavigationVisibility() {
-    navigationUpdateCount++;
-    console.log(`updateNavigationVisibility called ${navigationUpdateCount} times`);
-    
     const loginNavItem = document.getElementById('login-nav-item');
     const logoutNavItem = document.getElementById('logout-nav-item');
     const adminNavItems = document.getElementById('admin-nav-items');
     
-    const currentState = AuthUtils.isLoggedIn() ? 'logged-in' : 'logged-out';
-    
-    if (lastNavigationState === currentState) {
-        console.log(`Navigation state unchanged (${currentState}), skipping update`);
+    if (!loginNavItem || !logoutNavItem || !adminNavItems) {
+        console.log('Navigation elements not found, skipping update');
         return;
     }
     
-    lastNavigationState = currentState;
+    const isLoggedIn = AuthUtils.isLoggedIn();
     
-    if (AuthUtils.isLoggedIn()) {
-        if (loginNavItem) loginNavItem.style.display = 'none';
-        if (logoutNavItem) logoutNavItem.style.display = 'block';
-        if (adminNavItems) adminNavItems.style.display = 'block';
+    if (isLoggedIn) {
+        loginNavItem.style.display = 'none';
+        logoutNavItem.style.display = 'block';
+        adminNavItems.style.display = 'block';
         console.log('Navigation updated: User is logged in');
     } else {
-        if (loginNavItem) loginNavItem.style.display = 'block';
-        if (logoutNavItem) logoutNavItem.style.display = 'none';
-        if (adminNavItems) adminNavItems.style.display = 'none';
+        loginNavItem.style.display = 'block';
+        logoutNavItem.style.display = 'none';
+        adminNavItems.style.display = 'none';
         console.log('Navigation updated: User is not logged in');
     }
 }
 
-console.log('Automatic token clearing disabled - tokens will persist across page reloads');
+console.log('Auth utilities loaded and ready');

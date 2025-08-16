@@ -1,9 +1,12 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using HireSphere.Adminpanel.Models;
+using Microsoft.AspNetCore.Authorization;
+using HireSphere.Adminpanel.Filters;
 
 namespace HireSphere.Adminpanel.Controllers;
 
+[ServiceFilter(typeof(SessionAuthorizationFilter))]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;

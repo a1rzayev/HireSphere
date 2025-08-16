@@ -124,6 +124,27 @@ public class AuthController : Controller
             {
                 if (authResponse.TryGetProperty("success", out var success) && success.GetBoolean())
                 {
+                    bool isAdmin = false;
+                    if (authResponse.TryGetProperty("user", out var userElement) && userElement.ValueKind != JsonValueKind.Null)
+                    {
+                        if (userElement.TryGetProperty("role", out var role))
+                        {
+                            if (role.ValueKind == JsonValueKind.Number)
+                            {
+                                isAdmin = role.GetInt32() == 0; 
+                            }
+                            else if (role.ValueKind == JsonValueKind.String)
+                            {
+                                isAdmin = role.GetString() == "0";
+                            }
+                        }
+                    }
+
+                    if (!isAdmin)
+                    {
+                        ViewBag.ErrorMessage = "Access denied. This application requires Admin privileges. Your account does not have the required role.";
+                        return View(model);
+                    }
 
                     if (authResponse.TryGetProperty("accessToken", out var accessToken))
                     {
@@ -135,9 +156,8 @@ public class AuthController : Controller
                         
                         if (!string.IsNullOrEmpty(token))
                         {
-                            // HttpContext.Session.SetString("AccessToken", token);
-                            TempData["AccessToken"] = token;
-                            System.Diagnostics.Debug.WriteLine($"Setting TempData.AccessToken: {token}");
+                            HttpContext.Session.SetString("AccessToken", token);
+                            System.Diagnostics.Debug.WriteLine($"Setting Session.AccessToken: {token}");
                         }
                         else
                         {
@@ -159,9 +179,8 @@ public class AuthController : Controller
                         
                         if (!string.IsNullOrEmpty(refresh))
                         {
-                            // HttpContext.Session.SetString("RefreshToken", refresh);
-                            TempData["RefreshToken"] = refresh;
-                            System.Diagnostics.Debug.WriteLine($"Setting TempData.RefreshToken: {refresh}");
+                            HttpContext.Session.SetString("RefreshToken", refresh);
+                            System.Diagnostics.Debug.WriteLine($"Setting Session.RefreshToken: {refresh}");
                         }
                         else
                         {
@@ -173,9 +192,9 @@ public class AuthController : Controller
                         System.Diagnostics.Debug.WriteLine("Could not find refreshToken property in response");
                     }
                     
-                    if (authResponse.TryGetProperty("user", out var userElement) && userElement.ValueKind != JsonValueKind.Null)
+                    if (authResponse.TryGetProperty("user", out var userDataElement) && userDataElement.ValueKind != JsonValueKind.Null)
                     {
-                        if (userElement.TryGetProperty("id", out var id))
+                        if (userDataElement.TryGetProperty("id", out var id))
                         {
                             string userId = id.ValueKind == JsonValueKind.String 
                                 ? id.GetString() ?? "" 
@@ -186,13 +205,13 @@ public class AuthController : Controller
                             }
                         }
                         
-                        if (userElement.TryGetProperty("name", out var name))
+                        if (userDataElement.TryGetProperty("name", out var name))
                         {
                             string nameValue = name.ValueKind == JsonValueKind.String 
                                 ? name.GetString() ?? "" 
                                 : name.ToString();
                             
-                            if (userElement.TryGetProperty("surname", out var surname))
+                            if (userDataElement.TryGetProperty("surname", out var surname))
                             {
                                 string surnameValue = surname.ValueKind == JsonValueKind.String 
                                     ? surname.GetString() ?? "" 
@@ -210,7 +229,7 @@ public class AuthController : Controller
                             }
                         }
                         
-                        if (userElement.TryGetProperty("email", out var email))
+                        if (userDataElement.TryGetProperty("email", out var email))
                         {
                             string emailValue = email.ValueKind == JsonValueKind.String 
                                 ? email.GetString() ?? "" 
@@ -221,7 +240,7 @@ public class AuthController : Controller
                             }
                         }
                         
-                        if (userElement.TryGetProperty("role", out var role))
+                        if (userDataElement.TryGetProperty("role", out var role))
                         {
                             string roleValue = role.ValueKind == JsonValueKind.String 
                                 ? role.GetString() ?? "" 
@@ -229,12 +248,13 @@ public class AuthController : Controller
                             if (!string.IsNullOrEmpty(roleValue))
                             {
                                 HttpContext.Session.SetString("UserRole", roleValue);
+                                System.Diagnostics.Debug.WriteLine($"Setting Session.UserRole: {roleValue}");
                             }
                         }
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"Before redirect - TempData.AccessToken: {TempData["AccessToken"]}");
-                    System.Diagnostics.Debug.WriteLine($"Before redirect - TempData.RefreshToken: {TempData["RefreshToken"]}");
+                    System.Diagnostics.Debug.WriteLine($"Login successful - UserRole: {HttpContext.Session.GetString("UserRole")}");
+                    System.Diagnostics.Debug.WriteLine($"Login successful - AccessToken: {HttpContext.Session.GetString("AccessToken")}");
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -306,16 +326,22 @@ public class AuthController : Controller
                 await _httpClient.PostAsync($"{baseUrl}/api/auth/logout", content);
             }
 
+            // Clear all session data
             HttpContext.Session.Clear();
             
-            ViewBag.ClearLocalStorage = true;
+            System.Diagnostics.Debug.WriteLine("Session cleared during logout");
+            
+            // Redirect to login page
+            return RedirectToAction("Login");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //Logging in the future
-            ViewBag.ClearLocalStorage = true;
+            System.Diagnostics.Debug.WriteLine($"Error during logout: {ex.Message}");
+            
+            // Even if there's an error, clear the session
+            HttpContext.Session.Clear();
+            
+            return RedirectToAction("Login");
         }
-
-        return RedirectToAction("Index", "Home");
     }
 }

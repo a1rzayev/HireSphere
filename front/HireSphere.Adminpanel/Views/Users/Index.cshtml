@@ -46,63 +46,97 @@
                                 <tbody>
                                     @foreach (var user in ViewBag.Users)
                                     {
+                                        var userId = user.GetType().GetProperty("Id")?.GetValue(user)?.ToString() ?? "";
+                                        var userName = user.GetType().GetProperty("Name")?.GetValue(user)?.ToString() ?? "";
+                                        var userSurname = user.GetType().GetProperty("Surname")?.GetValue(user)?.ToString() ?? "";
+                                        var userEmail = user.GetType().GetProperty("Email")?.GetValue(user)?.ToString() ?? "";
+                                        var userPhone = user.GetType().GetProperty("Phone")?.GetValue(user)?.ToString();
+                                        var userRole = (int)(user.GetType().GetProperty("Role")?.GetValue(user) ?? 0);
+                                        var userCreatedAt = user.GetType().GetProperty("CreatedAt")?.GetValue(user) as DateTime?;
+                                        
+                                        var fullName = $"{userName} {userSurname}".Trim();
+                                        if (string.IsNullOrEmpty(fullName))
+                                        {
+                                            fullName = "N/A";
+                                        }
+                                        
+                                        var roleName = userRole switch
+                                        {
+                                            0 => "Admin",
+                                            1 => "Employer",
+                                            2 => "Job Seeker",
+                                            _ => "Unknown"
+                                        };
+                                        
+                                        var roleClass = userRole switch
+                                        {
+                                            0 => "badge bg-danger",
+                                            1 => "badge bg-warning",
+                                            2 => "badge bg-info",
+                                            _ => "badge bg-secondary"
+                                        };
+                                        
                                         <tr>
                                             <td>
-                                                <small class="text-muted">@user.GetProperty("id").GetString()</small>
+                                                <small class="text-muted">@userId</small>
                                             </td>
                                             <td>
-                                                <strong>@(user.GetProperty("name").GetString() ?? "") @(user.GetProperty("surname").GetString() ?? "")</strong>
+                                                <strong>@fullName</strong>
                                             </td>
                                             <td>
-                                                <a href="mailto:@user.GetProperty("email").GetString()" class="text-decoration-none">
-                                                    @user.GetProperty("email").GetString()
-                                                </a>
-                                            </td>
-                                            <td>
-                                                @{
-                                                    var roleValue = user.GetProperty("role").GetInt32();
-                                                    var roleName = roleValue switch
-                                                    {
-                                                        0 => "Admin",
-                                                        1 => "Employer",
-                                                        2 => "Job Seeker",
-                                                        _ => "Unknown"
-                                                    };
-                                                    var roleClass = roleValue switch
-                                                    {
-                                                        0 => "badge bg-danger",
-                                                        1 => "badge bg-warning",
-                                                        2 => "badge bg-info",
-                                                        _ => "badge bg-secondary"
-                                                    };
+                                                @if (!string.IsNullOrEmpty(userEmail))
+                                                {
+                                                    <a href="mailto:@userEmail" class="text-decoration-none">
+                                                        @userEmail
+                                                    </a>
                                                 }
+                                                else
+                                                {
+                                                    <span class="text-muted">N/A</span>
+                                                }
+                                            </td>
+                                            <td>
                                                 <span class="@roleClass">@roleName</span>
                                             </td>
                                             <td>
-                                                @(user.GetProperty("phone").GetString() ?? "N/A")
+                                                @if (!string.IsNullOrEmpty(userPhone))
+                                                {
+                                                    @userPhone
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">N/A</span>
+                                                }
                                             </td>
                                             <td>
                                                 <small class="text-muted">
-                                                    @if (user.TryGetProperty("createdAt", out JsonElement createdAt))
+                                                    @if (userCreatedAt.HasValue)
                                                     {
-                                                        @createdAt.GetDateTime().ToString("MMM dd, yyyy")
+                                                        @userCreatedAt.Value.ToString("MMM dd, yyyy")
                                                     }
                                                     else
                                                     {
-                                                        @("N/A")
+                                                        <span class="text-muted">N/A</span>
                                                     }
                                                 </small>
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <a href="@Url.Action("Details", "Users", new { id = user.GetProperty("id").GetString() })" 
-                                                       class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                            onclick="confirmDelete('@user.GetProperty("id").GetString()', '@(user.GetProperty("name").GetString() ?? "") @(user.GetProperty("surname").GetString() ?? "")')">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
+                                                    @if (!string.IsNullOrEmpty(userId))
+                                                    {
+                                                        <a href="@Url.Action("Details", "Users", new { id = userId })" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                                onclick="confirmDelete('@userId', '@fullName')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Invalid ID</span>
+                                                    }
                                                 </div>
                                             </td>
                                         </tr>

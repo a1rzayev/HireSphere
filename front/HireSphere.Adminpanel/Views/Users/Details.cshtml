@@ -1,3 +1,4 @@
+@model HireSphere.Adminpanel.Models.UserDetailsViewModel
 @{
     ViewData["Title"] = "User Details";
 }
@@ -25,9 +26,8 @@
                         </div>
                     }
 
-                    @if (ViewBag.User != null)
+                    @if (Model != null)
                     {
-                        var user = ViewBag.User;
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="row mb-3">
@@ -35,7 +35,14 @@
                                         <strong>Full Name:</strong>
                                     </div>
                                     <div class="col-sm-9">
-                                        @(user.GetProperty("name").GetString() ?? "") @(user.GetProperty("surname").GetString() ?? "")
+                                        @if (!string.IsNullOrEmpty(Model.FullName))
+                                        {
+                                            @Model.FullName
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not provided</span>
+                                        }
                                     </div>
                                 </div>
 
@@ -44,47 +51,10 @@
                                         <strong>Email:</strong>
                                     </div>
                                     <div class="col-sm-9">
-                                        <a href="mailto:@user.GetProperty("email").GetString()" class="text-decoration-none">
-                                            @user.GetProperty("email").GetString()
-                                        </a>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <div class="col-sm-3">
-                                        <strong>Role:</strong>
-                                    </div>
-                                    <div class="col-sm-9">
-                                        @{
-                                            var roleValue = user.GetProperty("role").GetInt32();
-                                            var roleName = roleValue switch
-                                            {
-                                                0 => "Admin",
-                                                1 => "Employer",
-                                                2 => "Job Seeker",
-                                                _ => "Unknown"
-                                            };
-                                            var roleClass = roleValue switch
-                                            {
-                                                0 => "badge bg-danger fs-6",
-                                                1 => "badge bg-warning fs-6",
-                                                2 => "badge bg-info fs-6",
-                                                _ => "badge bg-secondary fs-6"
-                                            };
-                                        }
-                                        <span class="@roleClass">@roleName</span>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <div class="col-sm-3">
-                                        <strong>Phone:</strong>
-                                    </div>
-                                    <div class="col-sm-9">
-                                        @if (user.TryGetProperty("phone", out JsonElement phone) && !string.IsNullOrEmpty(phone.GetString()))
+                                        @if (!string.IsNullOrEmpty(Model.Email))
                                         {
-                                            <a href="tel:@phone.GetString()" class="text-decoration-none">
-                                                @phone.GetString()
+                                            <a href="mailto:@Model.Email" class="text-decoration-none">
+                                                @Model.Email
                                             </a>
                                         }
                                         else
@@ -96,10 +66,37 @@
 
                                 <div class="row mb-3">
                                     <div class="col-sm-3">
+                                        <strong>Role:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <span class="@Model.RoleClass">@Model.RoleName</span>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Phone:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @if (Model.HasPhone)
+                                        {
+                                            <a href="tel:@Model.Phone" class="text-decoration-none">
+                                                @Model.Phone
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">@Model.PhoneDisplay</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
                                         <strong>User ID:</strong>
                                     </div>
                                     <div class="col-sm-9">
-                                        <code class="text-muted">@user.GetProperty("id").GetString()</code>
+                                        <code class="text-muted">@Model.UserId</code>
                                     </div>
                                 </div>
 
@@ -108,14 +105,7 @@
                                         <strong>Created:</strong>
                                     </div>
                                     <div class="col-sm-9">
-                                        @if (user.TryGetProperty("createdAt", out JsonElement createdAt))
-                                        {
-                                            @createdAt.GetDateTime().ToString("MMMM dd, yyyy 'at' HH:mm")
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">Unknown</span>
-                                        }
+                                        <span class="text-muted">@Model.CreatedAtFormatted</span>
                                     </div>
                                 </div>
 
@@ -124,21 +114,7 @@
                                         <strong>Email Confirmed:</strong>
                                     </div>
                                     <div class="col-sm-9">
-                                        @if (user.TryGetProperty("isEmailConfirmed", out JsonElement isEmailConfirmed))
-                                        {
-                                            if (isEmailConfirmed.GetBoolean())
-                                            {
-                                                <span class="badge bg-success">Confirmed</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-warning">Not Confirmed</span>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">Unknown</span>
-                                        }
+                                        <span class="@Model.EmailStatusClass">@Model.EmailStatusText</span>
                                     </div>
                                 </div>
                             </div>
@@ -152,19 +128,22 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="d-grid gap-2">
-                                            <a href="mailto:@user.GetProperty("email").GetString()" class="btn btn-outline-primary">
-                                                <i class="fas fa-envelope me-2"></i>Send Email
-                                            </a>
-                                            
-                                            @if (user.TryGetProperty("phone", out JsonElement phoneNumber) && !string.IsNullOrEmpty(phoneNumber.GetString()))
+                                            @if (!string.IsNullOrEmpty(Model.Email))
                                             {
-                                                <a href="tel:@phoneNumber.GetString()" class="btn btn-outline-success">
+                                                <a href="mailto:@Model.Email" class="btn btn-outline-primary">
+                                                    <i class="fas fa-envelope me-2"></i>Send Email
+                                                </a>
+                                            }
+                                            
+                                            @if (Model.HasPhone)
+                                            {
+                                                <a href="tel:@Model.Phone" class="btn btn-outline-success">
                                                     <i class="fas fa-phone me-2"></i>Call User
                                                 </a>
                                             }
                                             
                                             <button type="button" class="btn btn-outline-danger" 
-                                                    onclick="confirmDelete('@user.GetProperty("id").GetString()', '@(user.GetProperty("name").GetString() ?? "") @(user.GetProperty("surname").GetString() ?? "")')">
+                                                    onclick="confirmDelete('@Model.Id', '@Model.FullName')">
                                                 <i class="fas fa-trash me-2"></i>Delete User
                                             </button>
                                         </div>
@@ -179,6 +158,11 @@
                             <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
                             <h5 class="text-muted">User not found</h5>
                             <p class="text-muted">The requested user could not be found or loaded.</p>
+                            <div class="mt-3">
+                                <a href="@Url.Action("Index", "Users")" class="btn btn-primary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Users List
+                                </a>
+                            </div>
                         </div>
                     }
                 </div>
