@@ -9,12 +9,12 @@ using System.Net.Http;
 namespace HireSphere.Adminpanel.Controllers;
 
 [ServiceFilter(typeof(SessionAuthorizationFilter))]
-public class CompaniesController : Controller
+public class CompanyController : Controller
 {
     private readonly IConfiguration _configuration;
     private readonly HttpClient _httpClient;
 
-    public CompaniesController(IConfiguration configuration, HttpClient httpClient)
+    public CompanyController(IConfiguration configuration, HttpClient httpClient)
     {
         _configuration = configuration;
         _httpClient = httpClient;

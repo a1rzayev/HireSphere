@@ -8,12 +8,12 @@ using HireSphere.Adminpanel.Filters;
 namespace HireSphere.Adminpanel.Controllers;
 
 [ServiceFilter(typeof(SessionAuthorizationFilter))]
-public class UsersController : Controller
+public class UserController : Controller
 {
     private readonly IConfiguration _configuration;
     private readonly HttpClient _httpClient;
 
-    public UsersController(IConfiguration configuration, HttpClient httpClient)
+    public UserController(IConfiguration configuration, HttpClient httpClient)
     {
         _configuration = configuration;
         _httpClient = httpClient;

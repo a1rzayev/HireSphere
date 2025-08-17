@@ -13,7 +13,7 @@
                             <i class="fas fa-building me-2"></i>Companies Management
                         </h3>
                         <div>
-                            <a href="@Url.Action("Create", "Companies")" class="btn btn-primary">
+                            <a href="@Url.Action("Create", "Company")" class="btn btn-primary">
                                 <i class="fas fa-plus me-1"></i>Create New Company
                             </a>
                         </div>
@@ -114,11 +114,11 @@
                                                 <div class="btn-group" role="group">
                                                     @if (!string.IsNullOrEmpty(companyId))
                                                     {
-                                                        <a href="@Url.Action("Details", "Companies", new { id = companyId })" 
+                                                        <a href="@Url.Action("Details", "Company", new { id = companyId })" 
                                                            class="btn btn-sm btn-outline-primary" title="View Details">
                                                             <i class="fas fa-eye"></i>
                                                         </a>
-                                                        <a href="@Url.Action("Edit", "Companies", new { id = companyId })" 
+                                                        <a href="@Url.Action("Edit", "Company", new { id = companyId })" 
                                                            class="btn btn-sm btn-outline-warning" title="Edit Company">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
@@ -180,7 +180,7 @@
     <script>
         function confirmDelete(companyId, companyName) {
             document.getElementById('deleteCompanyName').textContent = companyName;
-            document.getElementById('deleteForm').action = '@Url.Action("Delete", "Companies")/' + companyId;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete", "Company")/' + companyId;
             
             const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
             deleteModal.show();

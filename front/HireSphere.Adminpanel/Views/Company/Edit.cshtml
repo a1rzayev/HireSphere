@@ -1,6 +1,6 @@
 @model HireSphere.Adminpanel.Models.CompanyViewModel
 @{
-    ViewData["Title"] = "Create Company";
+    ViewData["Title"] = "Edit Company";
 }
 
 <div class="container-fluid">
@@ -10,17 +10,24 @@
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h3 class="card-title">
-                            <i class="fas fa-plus-circle me-2"></i>Create New Company
+                            <i class="fas fa-edit me-2"></i>Edit Company: @Model.Name
                         </h3>
                         <div>
-                            <a href="@Url.Action("Index", "Companies")" class="btn btn-secondary">
+                            <a href="@Url.Action("Details", "Company", new { id = Model.Id })" class="btn btn-secondary">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </a>
+                            <a href="@Url.Action("Index", "Company")" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-1"></i>Back to Companies
                             </a>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="OwnerUserId" />
+                        <input type="hidden" asp-for="CreatedAt" />
+                        
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert">
                             <i class="fas fa-exclamation-triangle me-2"></i>Please correct the errors below.
                         </div>
@@ -98,19 +105,33 @@
                                 <div class="card">
                                     <div class="card-header">
                                         <h6 class="card-title mb-0">
-                                            <i class="fas fa-info-circle me-1"></i>Information
+                                            <i class="fas fa-info-circle me-1"></i>Company Information
                                         </h6>
                                     </div>
                                     <div class="card-body">
-                                        <div class="alert alert-info">
-                                            <h6><i class="fas fa-lightbulb me-1"></i>Tips:</h6>
-                                            <ul class="mb-0">
-                                                <li>Company name is required</li>
-                                                <li>Description helps users understand your company</li>
-                                                <li>Website should be a valid URL</li>
-                                                <li>Logo URL should be a direct link to an image</li>
-                                                <li>Location helps with job search relevance</li>
-                                            </ul>
+                                        <div class="row mb-2">
+                                            <div class="col-6">
+                                                <small class="text-muted">Company ID:</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <small><code>@Model.Id</code></small>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-6">
+                                                <small class="text-muted">Owner ID:</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <small><code>@Model.OwnerUserId</code></small>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-6">
+                                                <small class="text-muted">Created:</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">@Model.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -124,18 +145,59 @@
                                     <div class="card-body">
                                         <div class="d-grid gap-2">
                                             <button type="submit" class="btn btn-primary">
-                                                <i class="fas fa-save me-1"></i>Create Company
+                                                <i class="fas fa-save me-1"></i>Update Company
                                             </button>
-                                            <a href="@Url.Action("Index", "Companies")" class="btn btn-outline-secondary">
+                                            <a href="@Url.Action("Details", "Company", new { id = Model.Id })" class="btn btn-outline-secondary">
                                                 <i class="fas fa-times me-1"></i>Cancel
                                             </a>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>Danger Zone
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-grid">
+                                            <button type="button" class="btn btn-danger" 
+                                                    onclick="confirmDelete('@Model.Id', '@Model.Name')">
+                                                <i class="fas fa-trash me-1"></i>Delete Company
+                                            </button>
+                                        </div>
+                                        <small class="text-muted mt-2 d-block">
+                                            This action cannot be undone. All associated data will be permanently removed.
+                                        </small>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete company <strong id="deleteCompanyName"></strong>?</p>
+                <p class="text-danger"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Company</button>
+                </form>
             </div>
         </div>
     </div>
@@ -160,5 +222,13 @@
                 this.value = 'https://' + value;
             }
         });
+
+        function confirmDelete(companyId, companyName) {
+            document.getElementById('deleteCompanyName').textContent = companyName;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete", "Company")/' + companyId;
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
     </script>
 }
