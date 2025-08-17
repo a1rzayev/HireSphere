@@ -23,9 +23,14 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item" id="admin-nav-items" style="display: none;">
+                        <li class="nav-item admin-nav-item" style="display: none;">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">
                                 <i class="fas fa-users me-1"></i>Users
+                            </a>
+                        </li>
+                        <li class="nav-item admin-nav-item" style="display: none;">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Companies" asp-action="Index">
+                                <i class="fas fa-building me-1"></i>Companies
                             </a>
                         </li>
                     </ul>
@@ -56,6 +61,36 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/auth.js" asp-append-version="true"></script>
+    
+    <script>
+        // Navigation visibility logic - runs on every page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateNavigationVisibility();
+        });
+        
+        function updateNavigationVisibility() {
+            const loginNavItem = document.getElementById('login-nav-item');
+            const logoutNavItem = document.getElementById('logout-nav-item');
+            const adminNavItems = document.querySelectorAll('.admin-nav-item');
+            
+            // Check if we're on a page that has session data available
+            const sessionAccessToken = '@Context.Session.GetString("AccessToken")';
+            const sessionUserRole = '@Context.Session.GetString("UserRole")';
+            
+            const hasValidSession = sessionAccessToken && sessionUserRole === '0';
+            
+            if (hasValidSession) {
+                if (loginNavItem) loginNavItem.style.display = 'none';
+                if (logoutNavItem) logoutNavItem.style.display = 'block';
+                adminNavItems.forEach(item => item.style.display = 'block');
+            } else {
+                if (loginNavItem) loginNavItem.style.display = 'block';
+                if (logoutNavItem) logoutNavItem.style.display = 'none';
+                adminNavItems.forEach(item => item.style.display = 'none');
+            }
+        }
+    </script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

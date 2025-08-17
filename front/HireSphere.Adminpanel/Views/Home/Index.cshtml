@@ -2,50 +2,50 @@
     ViewData["Title"] = "Admin Panel";
 }
 
-<div class="text-center">
+<div class="text-center mb-5">
     <h1 class="display-4">Admin Panel</h1>
-    <p>Welcome to the HireSphere Administration Panel</p>
+    <p class="lead">Welcome to the HireSphere Administration Panel</p>
+</div>
+
+<div class="row" id="admin-dashboard" style="display: none;">
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Users Management</h5>
+                <p class="card-text">Manage system users, view profiles, and handle user accounts.</p>
+                <a href="@Url.Action("Index", "Users")" class="btn btn-primary">
+                    <i class="fas fa-arrow-right me-1"></i>Manage Users
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-building fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Companies Management</h5>
+                <p class="card-text">View and manage registered companies, their details, and information.</p>
+                <a href="@Url.Action("Index", "Companies")" class="btn btn-success">
+                    <i class="fas fa-arrow-right me-1"></i>Manage Companies
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <script>
-        // Simple token persistence check - only copy from session to localStorage if needed
         document.addEventListener('DOMContentLoaded', function() {
-            const sessionAccessToken = '@Context.Session.GetString("AccessToken")';
-            const sessionRefreshToken = '@Context.Session.GetString("RefreshToken")';
-            
-            // Only set localStorage if session has tokens and localStorage is empty
-            if (sessionAccessToken && sessionRefreshToken) {
-                const storedAccessToken = localStorage.getItem('accessToken');
-                const storedRefreshToken = localStorage.getItem('refreshToken');
-                
-                if (!storedAccessToken || !storedRefreshToken) {
-                    localStorage.setItem('accessToken', sessionAccessToken);
-                    localStorage.setItem('refreshToken', sessionRefreshToken);
-                    console.log('Tokens copied from session to localStorage');
-                }
+            // Show admin dashboard if authenticated
+            const adminDashboard = document.getElementById('admin-dashboard');
+            if (adminDashboard) {
+                const sessionAccessToken = '@Context.Session.GetString("AccessToken")';
+                const sessionUserRole = '@Context.Session.GetString("UserRole")';
+                const hasValidSession = sessionAccessToken && sessionUserRole === '0';
+                adminDashboard.style.display = hasValidSession ? 'block' : 'none';
             }
-            
-            // Update navigation visibility
-            updateNavigationVisibility();
         });
-        
-        function updateNavigationVisibility() {
-            const loginNavItem = document.getElementById('login-nav-item');
-            const logoutNavItem = document.getElementById('logout-nav-item');
-            const adminNavItems = document.getElementById('admin-nav-items');
-            
-            const hasTokens = localStorage.getItem('accessToken') && localStorage.getItem('refreshToken');
-            
-            if (hasTokens) {
-                if (loginNavItem) loginNavItem.style.display = 'none';
-                if (logoutNavItem) logoutNavItem.style.display = 'block';
-                if (adminNavItems) adminNavItems.style.display = 'block';
-            } else {
-                if (loginNavItem) loginNavItem.style.display = 'block';
-                if (logoutNavItem) logoutNavItem.style.display = 'none';
-                if (adminNavItems) adminNavItems.style.display = 'none';
-            }
-        }
     </script>
 }
