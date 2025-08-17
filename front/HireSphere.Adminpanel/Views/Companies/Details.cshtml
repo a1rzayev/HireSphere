@@ -156,6 +156,9 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="d-grid gap-2">
+                                            <a href="@Url.Action("Edit", "Companies", new { id = Model.Id })" class="btn btn-warning">
+                                                <i class="fas fa-edit me-1"></i>Edit Company
+                                            </a>
                                             <button type="button" class="btn btn-danger" 
                                                     onclick="confirmDelete('@Model.Id', '@Model.Name')">
                                                 <i class="fas fa-trash me-1"></i>Delete Company

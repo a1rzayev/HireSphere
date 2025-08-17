@@ -35,6 +35,11 @@ public class CompanyController : ControllerBase
     {
         try
         {
+            if (company.Id == Guid.Empty)
+            {
+                company.Id = Guid.NewGuid();
+            }
+            
             company.ValidateCompany();
             await _companyRepository.AddAsync(company);
             return CreatedAtAction(nameof(GetById), new { id = company.Id }, company);
@@ -56,6 +61,7 @@ public class CompanyController : ControllerBase
             existingCompany.Name = company.Name;
             existingCompany.Description = company.Description;
             existingCompany.Website = company.Website;
+            existingCompany.LogoUrl = company.LogoUrl;
             existingCompany.Location = company.Location;
             
             existingCompany.ValidateCompany();

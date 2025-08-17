@@ -1,0 +1,234 @@
+@model HireSphere.Adminpanel.Models.CompanyViewModel
+@{
+    ViewData["Title"] = "Edit Company";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="card-title">
+                            <i class="fas fa-edit me-2"></i>Edit Company: @Model.Name
+                        </h3>
+                        <div>
+                            <a href="@Url.Action("Details", "Companies", new { id = Model.Id })" class="btn btn-secondary">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </a>
+                            <a href="@Url.Action("Index", "Companies")" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Companies
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="OwnerUserId" />
+                        <input type="hidden" asp-for="CreatedAt" />
+                        
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Please correct the errors below.
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <label asp-for="Name" class="form-label">
+                                            <strong>Company Name *</strong>
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <input asp-for="Name" class="form-control" placeholder="Enter company name" required />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <label asp-for="Description" class="form-label">
+                                            <strong>Description</strong>
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <textarea asp-for="Description" class="form-control" rows="4" 
+                                                  placeholder="Enter company description (optional)"></textarea>
+                                        <span asp-validation-for="Description" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <label asp-for="Website" class="form-label">
+                                            <strong>Website</strong>
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <input asp-for="Website" class="form-control" type="url" 
+                                               placeholder="https://example.com (optional)" />
+                                        <span asp-validation-for="Website" class="text-danger"></span>
+                                        <small class="form-text text-muted">Include http:// or https://</small>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <label asp-for="Location" class="form-label">
+                                            <strong>Location</strong>
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <input asp-for="Location" class="form-control" 
+                                               placeholder="Enter company location (optional)" />
+                                        <span asp-validation-for="Location" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <label asp-for="LogoUrl" class="form-label">
+                                            <strong>Logo URL</strong>
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <input asp-for="LogoUrl" class="form-control" type="url" 
+                                               placeholder="https://example.com/logo.png (optional)" />
+                                        <span asp-validation-for="LogoUrl" class="text-danger"></span>
+                                        <small class="form-text text-muted">Direct link to company logo image</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">
+                                            <i class="fas fa-info-circle me-1"></i>Company Information
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-2">
+                                            <div class="col-6">
+                                                <small class="text-muted">Company ID:</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <small><code>@Model.Id</code></small>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-6">
+                                                <small class="text-muted">Owner ID:</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <small><code>@Model.OwnerUserId</code></small>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-6">
+                                                <small class="text-muted">Created:</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">@Model.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">
+                                            <i class="fas fa-tools me-1"></i>Actions
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save me-1"></i>Update Company
+                                            </button>
+                                            <a href="@Url.Action("Details", "Companies", new { id = Model.Id })" class="btn btn-outline-secondary">
+                                                <i class="fas fa-times me-1"></i>Cancel
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>Danger Zone
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-grid">
+                                            <button type="button" class="btn btn-danger" 
+                                                    onclick="confirmDelete('@Model.Id', '@Model.Name')">
+                                                <i class="fas fa-trash me-1"></i>Delete Company
+                                            </button>
+                                        </div>
+                                        <small class="text-muted mt-2 d-block">
+                                            This action cannot be undone. All associated data will be permanently removed.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete company <strong id="deleteCompanyName"></strong>?</p>
+                <p class="text-danger"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Company</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Auto-format website URL
+        document.getElementById('Website').addEventListener('blur', function() {
+            let value = this.value.trim();
+            if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
+                this.value = 'https://' + value;
+            }
+        });
+
+        // Auto-format logo URL
+        document.getElementById('LogoUrl').addEventListener('blur', function() {
+            let value = this.value.trim();
+            if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
+                this.value = 'https://' + value;
+            }
+        });
+
+        function confirmDelete(companyId, companyName) {
+            document.getElementById('deleteCompanyName').textContent = companyName;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete", "Companies")/' + companyId;
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+}

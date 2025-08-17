@@ -8,9 +8,16 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-building me-2"></i>Companies Management
-                    </h3>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="card-title">
+                            <i class="fas fa-building me-2"></i>Companies Management
+                        </h3>
+                        <div>
+                            <a href="@Url.Action("Create", "Companies")" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Create New Company
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     @if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
@@ -108,11 +115,15 @@
                                                     @if (!string.IsNullOrEmpty(companyId))
                                                     {
                                                         <a href="@Url.Action("Details", "Companies", new { id = companyId })" 
-                                                           class="btn btn-sm btn-outline-primary">
+                                                           class="btn btn-sm btn-outline-primary" title="View Details">
                                                             <i class="fas fa-eye"></i>
                                                         </a>
+                                                        <a href="@Url.Action("Edit", "Companies", new { id = companyId })" 
+                                                           class="btn btn-sm btn-outline-warning" title="Edit Company">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
                                                         <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                                onclick="confirmDelete('@companyId', '@company.Name')">
+                                                                onclick="confirmDelete('@companyId', '@company.Name')" title="Delete Company">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     }
