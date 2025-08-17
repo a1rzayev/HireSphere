@@ -49,37 +49,58 @@ public class UsersController : Controller
                 {
                     try
                     {
-                        var users = JsonSerializer.Deserialize<List<dynamic>>(content);
-                        var safeUsers = CreateSafeUserList(users);
-                        ViewBag.Users = safeUsers;
-                        ViewBag.SuccessMessage = $"Successfully loaded {safeUsers.Count} users.";
+                        var users = JsonSerializer.Deserialize<List<User>>(content, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+                        
+                        if (users != null)
+                        {
+                            var userViewModels = users.Select(u => new UserViewModel
+                            {
+                                Id = u.Id,
+                                Name = u.Name,
+                                Surname = u.Surname,
+                                Email = u.Email,
+                                Phone = u.Phone,
+                                Role = (int)u.Role,
+                                CreatedAt = u.CreatedAt,
+                                IsEmailConfirmed = u.IsEmailConfirmed
+                            }).ToList();
+                            
+                            ViewBag.SuccessMessage = $"Successfully loaded {userViewModels.Count} users.";
+                            return View(userViewModels);
+                        }
+                        else
+                        {
+                            ViewBag.ErrorMessage = "Failed to deserialize users data";
+                            return View(new List<UserViewModel>());
+                        }
                     }
                     catch (JsonException ex)
                     {
                         ViewBag.ErrorMessage = $"Failed to parse users data: {ex.Message}";
-                        ViewBag.Users = new List<object>();
+                        return View(new List<UserViewModel>());
                     }
                 }
                 else
                 {
                     ViewBag.ErrorMessage = "API returned empty response";
-                    ViewBag.Users = new List<object>();
+                    return View(new List<UserViewModel>());
                 }
             }
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 ViewBag.ErrorMessage = $"Failed to fetch users: {response.StatusCode} - {errorContent}";
-                ViewBag.Users = new List<object>();
+                return View(new List<UserViewModel>());
             }
         }
         catch (Exception ex)
         {
             ViewBag.ErrorMessage = $"An error occurred while fetching users: {ex.Message}";
-            ViewBag.Users = new List<object>();
+            return View(new List<UserViewModel>());
         }
-
-        return View();
     }
 
     [HttpGet]
@@ -202,98 +223,7 @@ public class UsersController : Controller
         return RedirectToAction("Index");
     }
 
-    private List<object> CreateSafeUserList(List<dynamic>? users)
-    {
-        var safeUsers = new List<object>();
-        
-        if (users == null) return safeUsers;
 
-        foreach (var user in users)
-        {
-            try
-            {
-                var safeUser = new
-                {
-                    Id = GetSafeStringProperty(user, "id"),
-                    Name = GetSafeStringProperty(user, "name"),
-                    Surname = GetSafeStringProperty(user, "surname"),
-                    Email = GetSafeStringProperty(user, "email"),
-                    Phone = GetSafeStringProperty(user, "phone"),
-                    Role = GetSafeIntProperty(user, "role"),
-                    CreatedAt = GetSafeDateTimeProperty(user, "createdAt")
-                };
-                
-                safeUsers.Add(safeUser);
-            }
-            catch
-            {
-                // Skip invalid users
-                continue;
-            }
-        }
-        
-        return safeUsers;
-    }
-
-    private string GetSafeStringProperty(dynamic user, string propertyName)
-    {
-        try
-        {
-            if (user != null)
-            {
-                var property = user.GetProperty(propertyName);
-                if (property != null)
-                {
-                    return property.GetString() ?? string.Empty;
-                }
-            }
-        }
-        catch
-        {
-            // Ignore errors and return empty string
-        }
-        return string.Empty;
-    }
-    
-    private int GetSafeIntProperty(dynamic user, string propertyName)
-    {
-        try
-        {
-            if (user != null)
-            {
-                var property = user.GetProperty(propertyName);
-                if (property != null)
-                {
-                    return property.GetInt32();
-                }
-            }
-        }
-        catch
-        {
-            // Ignore errors and return 0
-        }
-        return 0;
-    }
-    
-    private DateTime? GetSafeDateTimeProperty(dynamic user, string propertyName)
-    {
-        try
-        {
-            if (user != null)
-            {
-                var property = user.GetProperty(propertyName);
-                if (property != null)
-                {
-                    return property.GetDateTime();
-                }
-            }
-        }
-        catch
-        {
-            // Ignore errors and return null
-        }
-        return null;
-    }
 
     private UserDetailsViewModel? CreateUserViewModelFromJson(string jsonContent)
     {
@@ -313,13 +243,11 @@ public class UsersController : Controller
                 IsEmailConfirmed = GetBoolProperty(root, "isEmailConfirmed")
             };
 
-            // Validate that we have at least the essential data
             if (viewModel.Id == Guid.Empty)
             {
                 return null;
             }
 
-            // Set role name based on role value
             viewModel.RoleName = viewModel.RoleValue switch
             {
                 0 => "Admin",
@@ -328,14 +256,12 @@ public class UsersController : Controller
                 _ => "Unknown"
             };
 
-            // Set user ID as string for display
             viewModel.UserId = viewModel.Id.ToString();
 
             return viewModel;
         }
         catch (Exception ex)
         {
-            // Log the error (in a real application, you'd use proper logging)
             System.Diagnostics.Debug.WriteLine($"Error parsing user JSON: {ex.Message}");
             return null;
         }
@@ -355,7 +281,6 @@ public class UsersController : Controller
                 }
                 else if (prop.ValueKind == JsonValueKind.Number && prop.TryGetInt64(out var longValue))
                 {
-                    // Handle case where ID might be stored as a number
                     return new Guid(longValue.ToString());
                 }
             }
@@ -427,7 +352,6 @@ public class UsersController : Controller
                 }
                 else if (prop.ValueKind == JsonValueKind.Number)
                 {
-                    // Handle Unix timestamp if needed
                     if (prop.TryGetInt64(out var timestamp))
                     {
                         return DateTimeOffset.FromUnixTimeSeconds(timestamp).DateTime;

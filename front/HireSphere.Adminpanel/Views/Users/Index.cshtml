@@ -1,3 +1,4 @@
+@model List<HireSphere.Adminpanel.Models.UserViewModel>
 @{
     ViewData["Title"] = "Users Management";
 }
@@ -28,7 +29,7 @@
                         </div>
                     }
 
-                    @if (ViewBag.Users != null && ViewBag.Users.Count > 0)
+                    @if (Model?.Count > 0)
                     {
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
@@ -44,37 +45,19 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var user in ViewBag.Users)
+                                    @foreach (var user in Model ?? new List<UserViewModel>())
                                     {
-                                        var userId = user.GetType().GetProperty("Id")?.GetValue(user)?.ToString() ?? "";
-                                        var userName = user.GetType().GetProperty("Name")?.GetValue(user)?.ToString() ?? "";
-                                        var userSurname = user.GetType().GetProperty("Surname")?.GetValue(user)?.ToString() ?? "";
-                                        var userEmail = user.GetType().GetProperty("Email")?.GetValue(user)?.ToString() ?? "";
-                                        var userPhone = user.GetType().GetProperty("Phone")?.GetValue(user)?.ToString();
-                                        var userRole = (int)(user.GetType().GetProperty("Role")?.GetValue(user) ?? 0);
-                                        var userCreatedAt = user.GetType().GetProperty("CreatedAt")?.GetValue(user) as DateTime?;
-                                        
-                                        var fullName = $"{userName} {userSurname}".Trim();
-                                        if (string.IsNullOrEmpty(fullName))
+                                        if (user != null)
                                         {
-                                            fullName = "N/A";
-                                        }
-                                        
-                                        var roleName = userRole switch
-                                        {
-                                            0 => "Admin",
-                                            1 => "Employer",
-                                            2 => "Job Seeker",
-                                            _ => "Unknown"
-                                        };
-                                        
-                                        var roleClass = userRole switch
-                                        {
-                                            0 => "badge bg-danger",
-                                            1 => "badge bg-warning",
-                                            2 => "badge bg-info",
-                                            _ => "badge bg-secondary"
-                                        };
+                                            var userId = user.Id.ToString();
+                                            var fullName = user.FullName;
+                                            if (string.IsNullOrEmpty(fullName))
+                                            {
+                                                fullName = "N/A";
+                                            }
+                                            
+                                            var roleName = user.RoleName;
+                                            var roleClass = user.RoleClass;
                                         
                                         <tr>
                                             <td>
@@ -84,10 +67,10 @@
                                                 <strong>@fullName</strong>
                                             </td>
                                             <td>
-                                                @if (!string.IsNullOrEmpty(userEmail))
+                                                @if (!string.IsNullOrEmpty(user.Email))
                                                 {
-                                                    <a href="mailto:@userEmail" class="text-decoration-none">
-                                                        @userEmail
+                                                    <a href="mailto:@user.Email" class="text-decoration-none">
+                                                        @user.Email
                                                     </a>
                                                 }
                                                 else
@@ -99,9 +82,9 @@
                                                 <span class="@roleClass">@roleName</span>
                                             </td>
                                             <td>
-                                                @if (!string.IsNullOrEmpty(userPhone))
+                                                @if (!string.IsNullOrEmpty(user.Phone))
                                                 {
-                                                    @userPhone
+                                                    @user.Phone
                                                 }
                                                 else
                                                 {
@@ -110,14 +93,7 @@
                                             </td>
                                             <td>
                                                 <small class="text-muted">
-                                                    @if (userCreatedAt.HasValue)
-                                                    {
-                                                        @userCreatedAt.Value.ToString("MMM dd, yyyy")
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="text-muted">N/A</span>
-                                                    }
+                                                    @user.CreatedAt.ToString("MMM dd, yyyy")
                                                 </small>
                                             </td>
                                             <td>
@@ -140,6 +116,7 @@
                                                 </div>
                                             </td>
                                         </tr>
+                                        }
                                     }
                                 </tbody>
                             </table>
@@ -149,8 +126,8 @@
                     {
                         <div class="text-center py-5">
                             <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">No users found</h5>
-                            <p class="text-muted">There are currently no users in the system.</p>
+                            <h5 class="text-muted">@(Model == null ? "Error loading users" : "No users found")</h5>
+                            <p class="text-muted">@(Model == null ? "There was an error loading the users data." : "There are currently no users in the system.")</p>
                         </div>
                     }
                 </div>
