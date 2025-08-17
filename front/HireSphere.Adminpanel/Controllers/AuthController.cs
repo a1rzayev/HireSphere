@@ -60,7 +60,7 @@ public class AuthController : Controller
             {
                 Email = model.Email.Trim(),
                 Password = model.Password,
-                Role = 0 
+                Role = 0
             };
 
             var json = JsonSerializer.Serialize(loginRequest);
@@ -142,7 +142,7 @@ public class AuthController : Controller
 
                     if (!isAdmin)
                     {
-                        ViewBag.ErrorMessage = "Access denied. This application requires Admin privileges. Your account does not have the required role.";
+                        ViewBag.ErrorMessage = "Access denied. This application requires Admin privileges. Your account does not have the required role. Please use the appropriate application for your user type.";
                         return View(model);
                     }
 
@@ -326,19 +326,16 @@ public class AuthController : Controller
                 await _httpClient.PostAsync($"{baseUrl}/api/auth/logout", content);
             }
 
-            // Clear all session data
             HttpContext.Session.Clear();
             
             System.Diagnostics.Debug.WriteLine("Session cleared during logout");
             
-            // Redirect to login page
             return RedirectToAction("Login");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error during logout: {ex.Message}");
             
-            // Even if there's an error, clear the session
             HttpContext.Session.Clear();
             
             return RedirectToAction("Login");

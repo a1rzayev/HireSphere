@@ -92,7 +92,8 @@ public class AuthController : Controller
                 Surname = model.Surname.Trim(),
                 Email = model.Email.Trim(),
                 Password = model.Password,
-                ConfirmPassword = model.ConfirmPassword
+                ConfirmPassword = model.ConfirmPassword,
+                Role = 2
             };
 
             var json = JsonSerializer.Serialize(registerRequest);
@@ -217,6 +218,31 @@ public class AuthController : Controller
             {
                 if (authResponse.TryGetProperty("success", out var success) && success.GetBoolean())
                 {
+                    bool hasValidRole = false;
+                    if (authResponse.TryGetProperty("user", out var userElement) && userElement.ValueKind != JsonValueKind.Null)
+                    {
+                        if (userElement.TryGetProperty("role", out var role))
+                        {
+                            int userRole = 0;
+                            if (role.ValueKind == JsonValueKind.Number)
+                            {
+                                userRole = role.GetInt32();
+                            }
+                            else if (role.ValueKind == JsonValueKind.String)
+                            {
+                                int.TryParse(role.GetString(), out userRole);
+                            }
+                            
+                            hasValidRole = userRole == 1 || userRole == 2;
+                        }
+                    }
+
+                    if (!hasValidRole)
+                    {
+                        ViewBag.ErrorMessage = "Access denied. This application is for Job Seekers and Employers. Your account has Admin privileges. Please use the Admin Panel application instead.";
+                        return View(model);
+                    }
+
                     if (authResponse.TryGetProperty("accessToken", out var accessToken))
                     {
                         string token = accessToken.ValueKind == JsonValueKind.String 
@@ -243,9 +269,9 @@ public class AuthController : Controller
                         }
                     }
                     
-                    if (authResponse.TryGetProperty("user", out var userElement) && userElement.ValueKind != JsonValueKind.Null)
+                    if (authResponse.TryGetProperty("user", out var userDataElement) && userDataElement.ValueKind != JsonValueKind.Null)
                     {
-                        if (userElement.TryGetProperty("id", out var id))
+                        if (userDataElement.TryGetProperty("id", out var id))
                         {
                             string userId = id.ValueKind == JsonValueKind.String 
                                 ? id.GetString() ?? "" 
@@ -253,17 +279,16 @@ public class AuthController : Controller
                             if (!string.IsNullOrEmpty(userId))
                             {
                                 HttpContext.Session.SetString("UserId", userId);
-
                             }
                         }
                         
-                        if (userElement.TryGetProperty("name", out var name))
+                        if (userDataElement.TryGetProperty("name", out var name))
                         {
                             string nameValue = name.ValueKind == JsonValueKind.String 
                                 ? name.GetString() ?? "" 
                                 : name.ToString();
                             
-                            if (userElement.TryGetProperty("surname", out var surname))
+                            if (userDataElement.TryGetProperty("surname", out var surname))
                             {
                                 string surnameValue = surname.ValueKind == JsonValueKind.String 
                                     ? surname.GetString() ?? "" 
@@ -273,17 +298,15 @@ public class AuthController : Controller
                                 if (!string.IsNullOrEmpty(userName))
                                 {
                                     HttpContext.Session.SetString("UserName", userName);
-
                                 }
                             }
                             else if (!string.IsNullOrEmpty(nameValue))
                             {
                                 HttpContext.Session.SetString("UserName", nameValue);
-
                             }
                         }
                         
-                        if (userElement.TryGetProperty("email", out var email))
+                        if (userDataElement.TryGetProperty("email", out var email))
                         {
                             string emailValue = email.ValueKind == JsonValueKind.String 
                                 ? email.GetString() ?? "" 
@@ -291,11 +314,10 @@ public class AuthController : Controller
                             if (!string.IsNullOrEmpty(emailValue))
                             {
                                 HttpContext.Session.SetString("UserEmail", emailValue);
-
                             }
                         }
                         
-                        if (userElement.TryGetProperty("role", out var role))
+                        if (userDataElement.TryGetProperty("role", out var role))
                         {
                             string roleValue = role.ValueKind == JsonValueKind.String 
                                 ? role.GetString() ?? "" 
@@ -303,37 +325,9 @@ public class AuthController : Controller
                             if (!string.IsNullOrEmpty(roleValue))
                             {
                                 HttpContext.Session.SetString("UserRole", roleValue);
-
-                            }
-                        }
-                        
-                        if (userElement.TryGetProperty("phone", out var phone))
-                        {
-                            string phoneValue = phone.ValueKind == JsonValueKind.String 
-                                ? phone.GetString() ?? "" 
-                                : phone.ToString();
-                            if (!string.IsNullOrEmpty(phoneValue))
-                            {
-                                HttpContext.Session.SetString("UserPhone", phoneValue);
-
-                            }
-                        }
-                        
-                        if (userElement.TryGetProperty("company", out var company))
-                        {
-                            string companyValue = company.ValueKind == JsonValueKind.String 
-                                ? company.GetString() ?? "" 
-                                : company.ToString();
-                            if (!string.IsNullOrEmpty(companyValue))
-                            {
-                                HttpContext.Session.SetString("UserCompany", companyValue);
-
                             }
                         }
                     }
-
-                    System.Diagnostics.Debug.WriteLine($"Before redirect - Session.AccessToken: {HttpContext.Session.GetString("AccessToken")}");
-                    System.Diagnostics.Debug.WriteLine($"Before redirect - Session.RefreshToken: {HttpContext.Session.GetString("RefreshToken")}");
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -344,8 +338,6 @@ public class AuthController : Controller
                     {
                         errorMessage = message.GetString() ?? errorMessage;
                     }
-                    
-                    System.Diagnostics.Debug.WriteLine($"Login failed - Success=false, Message: {errorMessage}");
                     
                     ViewBag.ErrorMessage = errorMessage;
                     return View(model);
@@ -358,8 +350,6 @@ public class AuthController : Controller
                 {
                     errorMessage = message.GetString() ?? errorMessage;
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"Login failed - Status: {response.StatusCode}, Message: {errorMessage}");
                 
                 ViewBag.ErrorMessage = errorMessage;
                 return View(model);
@@ -411,7 +401,6 @@ public class AuthController : Controller
         }
         catch (Exception)
         {
-            //Logging in the future
             ViewBag.ClearLocalStorage = true;
         }
 
