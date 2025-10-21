@@ -1,0 +1,315 @@
+@model HireSphere.Adminpanel.Models.JobApplicationStatisticsViewModel
+@{
+    ViewData["Title"] = "Application Statistics";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-pie me-2"></i>Application Statistics</h2>
+    <div>
+        <a href="@Url.Action("Index")" class="btn btn-outline-primary me-2">
+            <i class="fas fa-list me-1"></i>All Applications
+        </a>
+        <a href="@Url.Action("Dashboard", "Analytics")" class="btn btn-outline-secondary">
+            <i class="fas fa-tachometer-alt me-1"></i>Analytics Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Application Statistics Overview -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-1">@Model.TotalApplications</h4>
+                        <p class="mb-0">Total Applications</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-file-alt fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small>All time applications</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-1">@Model.AcceptedCount</h4>
+                        <p class="mb-0">Accepted</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small>@Model.OfferedCount offered</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-1">@Model.InterviewCount</h4>
+                        <p class="mb-0">In Interview</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-comments fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small>@Model.ScreeningCount in screening</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-1">@Model.RejectedCount</h4>
+                        <p class="mb-0">Rejected</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-times-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small>@Model.WithdrawnCount withdrawn</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Distribution Chart -->
+<div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Application Status Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Status Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="border-end">
+                            <h4 class="text-primary mb-1">@Model.AppliedCount</h4>
+                            <small class="text-muted">Applied</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <h4 class="text-info mb-1">@Model.ScreeningCount</h4>
+                        <small class="text-muted">Screening</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border-end">
+                            <h4 class="text-warning mb-1">@Model.InterviewCount</h4>
+                            <small class="text-muted">Interview</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <h4 class="text-success mb-1">@Model.OfferedCount</h4>
+                        <small class="text-muted">Offered</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border-end">
+                            <h4 class="text-success mb-1">@Model.AcceptedCount</h4>
+                            <small class="text-muted">Accepted</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <h4 class="text-danger mb-1">@Model.RejectedCount</h4>
+                        <small class="text-muted">Rejected</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Trends and Top Jobs -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Monthly Application Trends</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-briefcase me-2"></i>Top Jobs by Applications</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.TopJobs.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var job in Model.TopJobs.Take(5))
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">@job.JobTitle</h6>
+                                    <small class="text-muted">@job.CompanyName</small>
+                                </div>
+                                <span class="badge bg-primary">@job.ApplicationCount applications</span>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-3">
+                        <i class="fas fa-briefcase fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">No job data available</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Application Status Counts Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-table me-2"></i>Detailed Status Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Status</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                                <th>Progress Bar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var status in Model.StatusCounts)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-@(status.Status switch {
+                                            "Applied" => "primary",
+                                            "Screening" => "info", 
+                                            "Interview" => "warning",
+                                            "Offered" => "success",
+                                            "Accepted" => "success",
+                                            "Rejected" => "danger",
+                                            "Withdrawn" => "secondary",
+                                            _ => "secondary"
+                                        })">@status.Status</span>
+                                    </td>
+                                    <td><strong>@status.Count</strong></td>
+                                    <td>@status.Percentage.ToString("F1")%</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-@(status.Status switch {
+                                                "Applied" => "primary",
+                                                "Screening" => "info", 
+                                                "Interview" => "warning",
+                                                "Offered" => "success",
+                                                "Accepted" => "success",
+                                                "Rejected" => "danger",
+                                                "Withdrawn" => "secondary",
+                                                _ => "secondary"
+                                            })" role="progressbar" style="width: @status.Percentage%" aria-valuenow="@status.Percentage" aria-valuemin="0" aria-valuemax="100">
+                                                @status.Percentage.ToString("F1")%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Status Distribution Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Applied', 'Screening', 'Interview', 'Offered', 'Accepted', 'Rejected', 'Withdrawn'],
+                    datasets: [{
+                        data: [@Model.AppliedCount, @Model.ScreeningCount, @Model.InterviewCount, @Model.OfferedCount, @Model.AcceptedCount, @Model.RejectedCount, @Model.WithdrawnCount],
+                        backgroundColor: ['#007bff', '#17a2b8', '#ffc107', '#28a745', '#28a745', '#dc3545', '#6c757d']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Monthly Applications Chart
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: [@Html.Raw(string.Join(", ", Model.MonthlyApplications.Select(m => $"'{m.Month}'")))],
+                    datasets: [{
+                        label: 'Applications',
+                        data: [@string.Join(", ", Model.MonthlyApplications.Select(m => m.Count))],
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}
+

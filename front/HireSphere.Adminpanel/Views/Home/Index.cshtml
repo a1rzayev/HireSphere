@@ -1,0 +1,300 @@
+﻿@{
+    ViewData["Title"] = "Admin Panel";
+}
+
+<div class="text-center mb-5">
+    <h1 class="display-4">Admin Panel</h1>
+    <p class="lead">Welcome to the HireSphere Administration Panel</p>
+</div>
+
+<div class="row" id="admin-dashboard" style="display: none;">
+    <!-- Statistics Cards -->
+    <div class="col-12 mb-4">
+        <div class="row" id="statistics-cards">
+            <!-- These will be populated by JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="col-12 mb-4">
+        <h3 class="mb-3">Quick Actions</h3>
+        <div class="row">
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Users Management</h5>
+                        <p class="card-text">Manage system users, view profiles, and handle user accounts.</p>
+                        <a href="@Url.Action("Index", "User")" class="btn btn-primary">
+                            <i class="fas fa-arrow-right me-1"></i>Manage Users
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-building fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Companies Management</h5>
+                        <p class="card-text">View and manage registered companies, their details, and information.</p>
+                        <a href="@Url.Action("Index", "Company")" class="btn btn-success">
+                            <i class="fas fa-arrow-right me-1"></i>Manage Companies
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-briefcase fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Jobs Management</h5>
+                        <p class="card-text">Manage job postings, view applications, and handle job categories.</p>
+                        <a href="@Url.Action("Index", "Job")" class="btn btn-warning">
+                            <i class="fas fa-arrow-right me-1"></i>Manage Jobs
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Analytics Dashboard</h5>
+                        <p class="card-text">View comprehensive analytics and statistics for the platform.</p>
+                        <a href="@Url.Action("Dashboard", "Analytics")" class="btn btn-info">
+                            <i class="fas fa-arrow-right me-1"></i>View Analytics
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-12">
+        <h3 class="mb-3">Recent Activity</h3>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Recent Users</h5>
+                    </div>
+                    <div class="card-body" id="recent-users">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-briefcase me-2"></i>Recent Jobs</h5>
+                    </div>
+                    <div class="card-body" id="recent-jobs">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show admin dashboard if authenticated
+            const adminDashboard = document.getElementById('admin-dashboard');
+            if (adminDashboard) {
+                const sessionAccessToken = '@Context.Session.GetString("AccessToken")';
+                const sessionUserRole = '@Context.Session.GetString("UserRole")';
+                const hasValidSession = sessionAccessToken && sessionUserRole === '0';
+                adminDashboard.style.display = hasValidSession ? 'block' : 'none';
+                
+                if (hasValidSession) {
+                    loadDashboardStatistics();
+                    loadRecentActivity();
+                }
+            }
+        });
+        
+        async function loadDashboardStatistics() {
+            try {
+                const statisticsCards = document.getElementById('statistics-cards');
+                if (!statisticsCards) return;
+                
+                // Create loading state
+                statisticsCards.innerHTML = `
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <div class="spinner-border spinner-border-sm text-white" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mb-0 mt-2">Loading statistics...</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Simulate API calls (replace with actual API calls)
+                const stats = {
+                    totalUsers: 1250,
+                    totalJobs: 340,
+                    totalCompanies: 89,
+                    totalApplications: 2150
+                };
+                
+                // Update statistics cards
+                statisticsCards.innerHTML = `
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-1">${stats.totalUsers.toLocaleString()}</h4>
+                                        <p class="mb-0">Total Users</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-users fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small>+45 this month</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-1">${stats.totalJobs.toLocaleString()}</h4>
+                                        <p class="mb-0">Total Jobs</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-briefcase fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small>+12 this month</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-1">${stats.totalCompanies.toLocaleString()}</h4>
+                                        <p class="mb-0">Total Companies</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-building fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small>+8 this month</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-1">${stats.totalApplications.toLocaleString()}</h4>
+                                        <p class="mb-0">Total Applications</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-file-alt fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small>+156 this month</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add fade-in animation
+                statisticsCards.classList.add('fade-in');
+                
+            } catch (error) {
+                console.error('Error loading dashboard statistics:', error);
+            }
+        }
+        
+        async function loadRecentActivity() {
+            try {
+                const recentUsers = document.getElementById('recent-users');
+                const recentJobs = document.getElementById('recent-jobs');
+                
+                if (recentUsers) {
+                    recentUsers.innerHTML = `
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">John Doe</h6>
+                                    <small class="text-muted">john.doe@example.com</small>
+                                </div>
+                                <small class="text-muted">2 hours ago</small>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Jane Smith</h6>
+                                    <small class="text-muted">jane.smith@example.com</small>
+                                </div>
+                                <small class="text-muted">4 hours ago</small>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Mike Johnson</h6>
+                                    <small class="text-muted">mike.johnson@example.com</small>
+                                </div>
+                                <small class="text-muted">1 day ago</small>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (recentJobs) {
+                    recentJobs.innerHTML = `
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Senior Developer</h6>
+                                    <small class="text-muted">Tech Corp</small>
+                                </div>
+                                <small class="text-muted">1 hour ago</small>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Marketing Manager</h6>
+                                    <small class="text-muted">Marketing Inc</small>
+                                </div>
+                                <small class="text-muted">3 hours ago</small>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Data Analyst</h6>
+                                    <small class="text-muted">Data Solutions</small>
+                                </div>
+                                <small class="text-muted">6 hours ago</small>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+            }
+        }
+    </script>
+}

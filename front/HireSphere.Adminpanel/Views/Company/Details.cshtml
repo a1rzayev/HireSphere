@@ -1,0 +1,221 @@
+@model HireSphere.Adminpanel.Models.CompanyViewModel
+@{
+    ViewData["Title"] = "Company Details";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="card-title">
+                            <i class="fas fa-building me-2"></i>Company Details
+                        </h3>
+                        <div>
+                            <a href="@Url.Action("Index", "Company")" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Companies
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>@ViewBag.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (Model != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Company ID:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <code>@Model.Id</code>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Name:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <h5 class="mb-0">@Model.Name</h5>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Description:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @if (!string.IsNullOrEmpty(Model.Description))
+                                        {
+                                            <p class="mb-0">@Model.Description</p>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No description provided</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Website:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @if (!string.IsNullOrEmpty(Model.Website))
+                                        {
+                                            <a href="@Model.Website" target="_blank" class="text-decoration-none">
+                                                <i class="fas fa-external-link-alt me-1"></i>@Model.Website
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No website provided</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Location:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @if (!string.IsNullOrEmpty(Model.Location))
+                                        {
+                                            <span><i class="fas fa-map-marker-alt me-1"></i>@Model.Location</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No location specified</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Owner User ID:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <code>@Model.OwnerUserId</code>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Created:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <span class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>@Model.CreatedAt.ToString("MMMM dd, yyyy 'at' HH:mm UTC")
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">
+                                            <i class="fas fa-image me-1"></i>Logo
+                                        </h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        @if (Model.HasLogo)
+                                        {
+                                            <img src="@Model.LogoUrl" alt="Company Logo" class="img-fluid rounded" style="max-height: 200px;">
+                                            <div class="mt-2">
+                                                <a href="@Model.LogoUrl" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-external-link-alt me-1"></i>View Full Size
+                                                </a>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="py-4">
+                                                <i class="fas fa-image fa-3x text-muted mb-3"></i>
+                                                <p class="text-muted mb-0">No logo uploaded</p>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">
+                                            <i class="fas fa-tools me-1"></i>Actions
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <a href="@Url.Action("Edit", "Company", new { id = Model.Id })" class="btn btn-warning">
+                                                <i class="fas fa-edit me-1"></i>Edit Company
+                                            </a>
+                                            <button type="button" class="btn btn-danger" 
+                                                    onclick="confirmDelete('@Model.Id', '@Model.Name')">
+                                                <i class="fas fa-trash me-1"></i>Delete Company
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Company not found</h5>
+                            <p class="text-muted">The requested company could not be loaded or does not exist.</p>
+                            <a href="@Url.Action("Index", "Company")" class="btn btn-primary">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Companies
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete company <strong id="deleteCompanyName"></strong>?</p>
+                <p class="text-danger"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Company</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(companyId, companyName) {
+            document.getElementById('deleteCompanyName').textContent = companyName;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete", "Company")/' + companyId;
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+}

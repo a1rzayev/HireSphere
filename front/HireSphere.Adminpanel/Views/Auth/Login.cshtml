@@ -1,0 +1,158 @@
+@model HireSphere.Adminpanel.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Admin Login";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Admin Panel Login
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Who should use this?</h6>
+                        <p class="mb-0">This application is for <strong>Administrators only</strong>. If you are a Job Seeker or Employer, please use the main HireSphere application instead.</p>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>@ViewBag.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Login" method="post">
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input asp-for="Email" type="email" class="form-control" placeholder="Enter your email" required />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input asp-for="Password" type="password" id="passwordInput" class="form-control" placeholder="Enter your password" required />
+                                <button type="button" class="btn btn-outline-secondary" id="togglePassword" title="Show/Hide Password">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="RememberMe" class="form-check-input" id="rememberMe" />
+                                <label asp-for="RememberMe" class="form-check-label" for="rememberMe">
+                                    <i class="fas fa-clock me-1"></i>Remember me
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login to Admin Panel
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-question-circle me-1"></i>
+                            Need help? Contact your system administrator.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <style>
+        #togglePassword {
+            border-left: none;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            transition: all 0.2s ease;
+        }
+        
+        #togglePassword:hover {
+            background-color: #e9ecef;
+            border-color: #ced4da;
+        }
+        
+        #togglePassword:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .input-group .form-control:focus {
+            z-index: 3;
+        }
+        
+        .input-group .btn {
+            z-index: 2;
+        }
+        
+        /* Remember Me styling */
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        
+        .form-check-input:focus {
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .form-check-label {
+            cursor: pointer;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .form-check-label:hover {
+            color: #0d6efd;
+        }
+        
+        .form-check-input {
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('passwordInput');
+            const togglePassword = document.getElementById('togglePassword');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            togglePassword.addEventListener('click', function() {
+                // Toggle password visibility
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                    togglePassword.title = 'Hide Password';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                    togglePassword.title = 'Show Password';
+                }
+            });
+        });
+    </script>
+}

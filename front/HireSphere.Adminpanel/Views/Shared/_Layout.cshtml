@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - HireSphere.Adminpanel</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/HireSphere.Adminpanel.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">HireSphere.Adminpanel</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-home me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown admin-nav-item" style="display: none;">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="usersDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-users me-1"></i>Users
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="usersDropdown">
+                                <li><a class="dropdown-item" asp-controller="User" asp-action="Index">
+                                    <i class="fas fa-list me-2"></i>All Users
+                                </a></li>
+                                <li><a class="dropdown-item" asp-controller="Analytics" asp-action="Users">
+                                    <i class="fas fa-chart-bar me-2"></i>User Analytics
+                                </a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown admin-nav-item" style="display: none;">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="companiesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-building me-1"></i>Companies
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="companiesDropdown">
+                                <li><a class="dropdown-item" asp-controller="Company" asp-action="Index">
+                                    <i class="fas fa-list me-2"></i>All Companies
+                                </a></li>
+                                <li><a class="dropdown-item" asp-controller="Analytics" asp-action="Companies">
+                                    <i class="fas fa-chart-bar me-2"></i>Company Analytics
+                                </a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown admin-nav-item" style="display: none;">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="jobsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-briefcase me-1"></i>Jobs
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="jobsDropdown">
+                                <li><a class="dropdown-item" asp-controller="Job" asp-action="Index">
+                                    <i class="fas fa-list me-2"></i>All Jobs
+                                </a></li>
+                                <li><a class="dropdown-item" asp-controller="JobApplication" asp-action="Index">
+                                    <i class="fas fa-file-alt me-2"></i>Job Applications
+                                </a></li>
+                                <li><a class="dropdown-item" asp-controller="Category" asp-action="Index">
+                                    <i class="fas fa-tags me-2"></i>Categories
+                                </a></li>
+                                <li><a class="dropdown-item" asp-controller="Analytics" asp-action="Jobs">
+                                    <i class="fas fa-chart-bar me-2"></i>Job Analytics
+                                </a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown admin-nav-item" style="display: none;">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="analyticsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-chart-line me-1"></i>Analytics
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="analyticsDropdown">
+                                <li><a class="dropdown-item" asp-controller="Analytics" asp-action="Dashboard">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" asp-controller="JobApplication" asp-action="Statistics">
+                                    <i class="fas fa-chart-pie me-2"></i>Application Statistics
+                                </a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav" id="auth-nav">
+                        <li class="nav-item" id="login-nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="Login">Admin Login</a>
+                        </li>
+                        <li class="nav-item" id="logout-nav-item" style="display: none;">
+                            <button type="button" class="btn btn-link nav-link text-dark" onclick="AuthUtils.logout()">Logout</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 - HireSphere.Adminpanel - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/auth.js" asp-append-version="true"></script>
+    
+    <script>
+        // Navigation visibility logic - runs on every page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateNavigationVisibility();
+        });
+        
+        function updateNavigationVisibility() {
+            const loginNavItem = document.getElementById('login-nav-item');
+            const logoutNavItem = document.getElementById('logout-nav-item');
+            const adminNavItems = document.querySelectorAll('.admin-nav-item');
+            
+            // Check if we're on a page that has session data available
+            const sessionAccessToken = '@Context.Session.GetString("AccessToken")';
+            const sessionUserRole = '@Context.Session.GetString("UserRole")';
+            
+            const hasValidSession = sessionAccessToken && sessionUserRole === '0';
+            
+            if (hasValidSession) {
+                if (loginNavItem) loginNavItem.style.display = 'none';
+                if (logoutNavItem) logoutNavItem.style.display = 'block';
+                adminNavItems.forEach(item => item.style.display = 'block');
+            } else {
+                if (loginNavItem) loginNavItem.style.display = 'block';
+                if (logoutNavItem) logoutNavItem.style.display = 'none';
+                adminNavItems.forEach(item => item.style.display = 'none');
+            }
+        }
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

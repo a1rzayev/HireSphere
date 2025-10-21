@@ -1,0 +1,247 @@
+@model HireSphere.Adminpanel.Models.UserAnalyticsViewModel
+@{
+    ViewData["Title"] = "User Analytics";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-users me-2"></i>User Analytics</h2>
+    <div>
+        <a href="@Url.Action("Dashboard")" class="btn btn-outline-primary me-2">
+            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+        </a>
+        <a href="@Url.Action("Index", "User")" class="btn btn-outline-secondary">
+            <i class="fas fa-list me-1"></i>Manage Users
+        </a>
+    </div>
+</div>
+
+<!-- User Statistics Overview -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-1">@Model.Statistics.TotalUsers</h4>
+                        <p class="mb-0">Total Users</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small>+@Model.Statistics.NewUsersThisMonth this month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-1">@Model.Statistics.ActiveUsers</h4>
+                        <p class="mb-0">Active Users</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-check fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small>@Model.Statistics.InactiveUsers inactive</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-1">@Model.Statistics.EmployerCount</h4>
+                        <p class="mb-0">Employers</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-building fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small>@Model.Statistics.JobSeekerCount job seekers</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-1">@Model.Statistics.AdminCount</h4>
+                        <p class="mb-0">Administrators</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-shield fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small>System administrators</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>User Roles Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="userRolesChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Monthly User Registration</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyUsersChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Users and Activity -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Recent Users</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentUsers.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var user in Model.RecentUsers)
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">@user.Name</h6>
+                                    <small class="text-muted">@user.Email</small>
+                                    <br>
+                                    <span class="badge bg-@(user.Role == "Admin" ? "danger" : user.Role == "Employer" ? "success" : "primary")">@user.Role</span>
+                                </div>
+                                <small class="text-muted">@user.CreatedAt.ToString("MMM dd, yyyy")</small>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-3">
+                        <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">No recent users found</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>User Activity</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="userActivityChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // User Roles Chart
+            const userRolesCtx = document.getElementById('userRolesChart').getContext('2d');
+            new Chart(userRolesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Admins', 'Employers', 'Job Seekers'],
+                    datasets: [{
+                        data: [@Model.Statistics.AdminCount, @Model.Statistics.EmployerCount, @Model.Statistics.JobSeekerCount],
+                        backgroundColor: ['#dc3545', '#28a745', '#007bff']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Monthly Users Chart
+            const monthlyUsersCtx = document.getElementById('monthlyUsersChart').getContext('2d');
+            new Chart(monthlyUsersCtx, {
+                type: 'line',
+                data: {
+                    labels: [@Html.Raw(string.Join(", ", Model.Statistics.MonthlyUsers.Select(m => $"'{m.Month}'")))],
+                    datasets: [{
+                        label: 'New Users',
+                        data: [@string.Join(", ", Model.Statistics.MonthlyUsers.Select(m => m.Count))],
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // User Activity Chart
+            const userActivityCtx = document.getElementById('userActivityChart').getContext('2d');
+            new Chart(userActivityCtx, {
+                type: 'bar',
+                data: {
+                    labels: [@Html.Raw(string.Join(", ", Model.UserActivities.Select(a => $"'{a.Activity}'")))],
+                    datasets: [{
+                        label: 'Activity Count',
+                        data: [@string.Join(", ", Model.UserActivities.Select(a => a.Count))],
+                        backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6c757d']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}
+

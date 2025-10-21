@@ -1,0 +1,122 @@
+@model HireSphere.Adminpanel.Models.CategoryViewModel
+@{
+    ViewData["Title"] = "Create Category";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-plus me-2"></i>Create New Category</h2>
+    <div>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Categories
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post" asp-action="Create">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Category Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">Category Name *</label>
+                        <input asp-for="Name" class="form-control" placeholder="Enter category name" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                        <div class="form-text">Category name will be used to organize jobs and will be visible to users.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Generated Slug</label>
+                        <input type="text" class="form-control" id="slugPreview" readonly placeholder="Slug will be generated automatically" />
+                        <div class="form-text">URL-friendly version of the category name (auto-generated).</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use clear, descriptive names for categories</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Categories help users find relevant jobs</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Slug is automatically generated from the name</li>
+                        <li class="mb-0"><i class="fas fa-check text-success me-2"></i>Categories can be edited after creation</li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-save me-2"></i>Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="submit" form="categoryForm" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Create Category
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info me-2"></i>Category Details</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>ID:</strong></td>
+                        <td><code>Auto-generated</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Created:</strong></td>
+                        <td>@DateTime.Now.ToString("MMM dd, yyyy")</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jobs:</strong></td>
+                        <td><span class="badge bg-primary">0</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="categoryForm" method="post" asp-action="Create" style="display: none;">
+    <input asp-for="Name" />
+</form>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.querySelector('input[name="Name"]');
+            const slugPreview = document.getElementById('slugPreview');
+            
+            nameInput.addEventListener('input', function() {
+                const slug = generateSlug(this.value);
+                slugPreview.value = slug;
+            });
+            
+            // Generate slug from name
+            function generateSlug(name) {
+                return name
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .replace(/^-|-$/g, '');
+            }
+        });
+    </script>
+}

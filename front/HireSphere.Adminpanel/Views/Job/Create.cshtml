@@ -1,0 +1,270 @@
+@model HireSphere.Adminpanel.Models.JobViewModel
+@{
+    ViewData["Title"] = "Create Job";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-plus me-2"></i>Create New Job</h2>
+    <div>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Jobs
+        </a>
+    </div>
+</div>
+
+<form method="post" asp-action="Create">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Basic Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label asp-for="Title" class="form-label">Job Title *</label>
+                            <input asp-for="Title" class="form-control" placeholder="Enter job title" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="JobType" class="form-label">Job Type *</label>
+                            <select asp-for="JobType" class="form-select">
+                                <option value="">Select Job Type</option>
+                                <option value="FullTime">Full Time</option>
+                                <option value="PartTime">Part Time</option>
+                                <option value="Contract">Contract</option>
+                                <option value="Internship">Internship</option>
+                                <option value="Temporary">Temporary</option>
+                            </select>
+                            <span asp-validation-for="JobType" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Location" class="form-label">Location</label>
+                            <input asp-for="Location" class="form-control" placeholder="Enter job location" />
+                            <span asp-validation-for="Location" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="SalaryFrom" class="form-label">Salary From</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="SalaryFrom" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="SalaryFrom" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="SalaryTo" class="form-label">Salary To</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="SalaryTo" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="SalaryTo" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsRemote" class="form-check-input" />
+                                <label asp-for="IsRemote" class="form-check-label">
+                                    Remote Work Available
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsActive" class="form-check-input" />
+                                <label asp-for="IsActive" class="form-check-label">
+                                    Job is Active
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Job Description -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Job Description</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Description *</label>
+                        <textarea asp-for="Description" class="form-control" rows="8" placeholder="Enter detailed job description"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Requirements" class="form-label">Requirements</label>
+                        <textarea asp-for="Requirements" class="form-control" rows="6" placeholder="Enter job requirements"></textarea>
+                        <span asp-validation-for="Requirements" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tags -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Tags</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Job Tags (comma-separated)</label>
+                        <input type="text" class="form-control" id="tagsInput" placeholder="e.g., JavaScript, React, Node.js" />
+                        <small class="form-text text-muted">Enter tags separated by commas</small>
+                    </div>
+                    <div id="tagsDisplay">
+                        <!-- Tags will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Job Settings -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Job Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="CompanyId" class="form-label">Company *</label>
+                        <select asp-for="CompanyId" class="form-select" id="companySelect">
+                            <option value="">Select Company</option>
+                            <!-- Companies will be loaded via JavaScript -->
+                        </select>
+                        <span asp-validation-for="CompanyId" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="CategoryId" class="form-label">Category *</label>
+                        <select asp-for="CategoryId" class="form-select" id="categorySelect">
+                            <option value="">Select Category</option>
+                            <!-- Categories will be loaded via JavaScript -->
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="ExpiresAt" class="form-label">Expiration Date</label>
+                        <input asp-for="ExpiresAt" type="datetime-local" class="form-control" />
+                        <span asp-validation-for="ExpiresAt" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Job Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info me-2"></i>Job Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Job ID:</strong></td>
+                            <td><code>Auto-generated</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Posted:</strong></td>
+                            <td>@DateTime.Now.ToString("MMM dd, yyyy")</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Applications:</strong></td>
+                            <td><span class="badge bg-primary">0</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-save me-2"></i>Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Create Job
+                        </button>
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle tags input
+            const tagsInput = document.getElementById('tagsInput');
+            const tagsDisplay = document.getElementById('tagsDisplay');
+            
+            tagsInput.addEventListener('input', function() {
+                const tags = this.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+                tagsDisplay.innerHTML = tags.map(tag => 
+                    `<span class="badge bg-primary me-1 mb-1">${tag}</span>`
+                ).join('');
+            });
+            
+            // Load companies and categories
+            loadCompanies();
+            loadCategories();
+            
+            // Set default expiration date (30 days from now)
+            const expiresAtInput = document.querySelector('input[name="ExpiresAt"]');
+            const defaultExpiry = new Date();
+            defaultExpiry.setDate(defaultExpiry.getDate() + 30);
+            expiresAtInput.value = defaultExpiry.toISOString().slice(0, 16);
+        });
+        
+        function loadCompanies() {
+            // This would typically load from an API endpoint
+            // For now, we'll use placeholder data
+            const companySelect = document.getElementById('companySelect');
+            const companies = [
+                { id: '1', name: 'Tech Corp' },
+                { id: '2', name: 'Marketing Inc' },
+                { id: '3', name: 'Data Solutions' }
+            ];
+            
+            companies.forEach(company => {
+                const option = document.createElement('option');
+                option.value = company.id;
+                option.textContent = company.name;
+                companySelect.appendChild(option);
+            });
+        }
+        
+        function loadCategories() {
+            // This would typically load from an API endpoint
+            // For now, we'll use placeholder data
+            const categorySelect = document.getElementById('categorySelect');
+            const categories = [
+                { id: '1', name: 'Software Development' },
+                { id: '2', name: 'Marketing' },
+                { id: '3', name: 'Data Analysis' },
+                { id: '4', name: 'Design' },
+                { id: '5', name: 'Sales' }
+            ];
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                categorySelect.appendChild(option);
+            });
+        }
+    </script>
+}
+
