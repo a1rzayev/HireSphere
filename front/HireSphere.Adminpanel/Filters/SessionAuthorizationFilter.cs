@@ -9,6 +9,7 @@ public class SessionAuthorizationFilter : IAuthorizationFilter
     {
         var accessToken = context.HttpContext.Session.GetString("AccessToken");
         var userRole = context.HttpContext.Session.GetString("UserRole");
+        var rememberMe = context.HttpContext.Session.GetInt32("RememberMe");
 
         // Check if user is authenticated
         if (string.IsNullOrEmpty(accessToken))
@@ -22,6 +23,13 @@ public class SessionAuthorizationFilter : IAuthorizationFilter
         {
             context.Result = new RedirectToActionResult("Login", "Auth", null);
             return;
+        }
+
+        // Refresh Remember Me session if enabled
+        if (rememberMe == 1)
+        {
+            // Extend session for Remember Me users
+            context.HttpContext.Session.SetInt32("RememberMe", 1);
         }
     }
 }

@@ -256,6 +256,20 @@ public class AuthController : Controller
                     System.Diagnostics.Debug.WriteLine($"Login successful - UserRole: {HttpContext.Session.GetString("UserRole")}");
                     System.Diagnostics.Debug.WriteLine($"Login successful - AccessToken: {HttpContext.Session.GetString("AccessToken")}");
 
+                    // Handle Remember Me functionality
+                    if (model.RememberMe)
+                    {
+                        // Set session timeout to 30 days (43200 minutes)
+                        HttpContext.Session.SetInt32("RememberMe", 1);
+                        System.Diagnostics.Debug.WriteLine("Remember Me enabled - Session extended to 30 days");
+                    }
+                    else
+                    {
+                        // Default session timeout (20 minutes)
+                        HttpContext.Session.Remove("RememberMe");
+                        System.Diagnostics.Debug.WriteLine("Remember Me disabled - Using default session timeout");
+                    }
+
                     return RedirectToAction("Index", "Home");
                 }
                 else

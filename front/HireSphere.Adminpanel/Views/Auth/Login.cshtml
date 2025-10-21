@@ -52,6 +52,15 @@
                             <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
 
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="RememberMe" class="form-check-input" id="rememberMe" />
+                                <label asp-for="RememberMe" class="form-check-label" for="rememberMe">
+                                    <i class="fas fa-clock me-1"></i>Remember me
+                                </label>
+                            </div>
+                        </div>
+
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-sign-in-alt me-2"></i>Login to Admin Panel
@@ -96,6 +105,32 @@
         
         .input-group .btn {
             z-index: 2;
+        }
+        
+        /* Remember Me styling */
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        
+        .form-check-input:focus {
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .form-check-label {
+            cursor: pointer;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .form-check-label:hover {
+            color: #0d6efd;
+        }
+        
+        .form-check-input {
+            cursor: pointer;
         }
     </style>
     <script>

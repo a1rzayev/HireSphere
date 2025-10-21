@@ -5,9 +5,11 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.IdleTimeout = TimeSpan.FromMinutes(20); // Default timeout
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
 builder.Services.AddAuthentication("Session")
@@ -45,6 +47,9 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseSession();
+
+// Add Remember Me middleware
+app.UseMiddleware<HireSphere.Adminpanel.Middleware.RememberMeMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
