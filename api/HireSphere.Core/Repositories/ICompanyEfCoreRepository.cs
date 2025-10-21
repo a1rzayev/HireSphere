@@ -15,4 +15,5 @@ public interface ICompanyEfCoreRepository
     Task<IEnumerable<Company>> GetByOwnerUserIdAsync(Guid ownerUserId);
     Task<IEnumerable<Company>> GetByNameAsync(string name);
     Task<IEnumerable<Company>> GetByLocationAsync(string location);
+    Task<int> GetTotalCompaniesCountAsync();
 }

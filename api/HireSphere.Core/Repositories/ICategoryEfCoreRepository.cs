@@ -15,4 +15,5 @@ public interface ICategoryEfCoreRepository
     Task<Category?> GetByNameAsync(string name);
     Task<Category?> GetBySlugAsync(string slug);
     Task<IEnumerable<Category>> GetByNameContainsAsync(string name);
+    Task<int> GetTotalCategoriesCountAsync();
 }

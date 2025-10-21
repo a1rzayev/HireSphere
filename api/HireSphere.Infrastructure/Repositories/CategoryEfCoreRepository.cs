@@ -65,4 +65,9 @@ public class CategoryEfCoreRepository : ICategoryEfCoreRepository
     {
         return await _dbSet.Where(c => c.Name.ToLower().Contains(name.ToLower())).ToListAsync();
     }
+
+    public async Task<int> GetTotalCategoriesCountAsync()
+    {
+        return await _dbSet.CountAsync();
+    }
 }

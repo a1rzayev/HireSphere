@@ -1,0 +1,244 @@
+@model HireSphere.Presentation.Models.JobViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="@Url.Action("Index", "Home")">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="@Url.Action("Index", "Jobs")">Jobs</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+                </ol>
+            </nav>
+
+            @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>@ViewBag.ErrorMessage
+                </div>
+            }
+
+            <div class="row">
+                <!-- Main Content -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h1 class="h3 mb-1">@Model.Title</h1>
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-building me-1"></i>@Model.CompanyName
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-map-marker-alt me-1"></i>@Model.Location
+                                        @if (Model.IsRemote)
+                                        {
+                                            <span class="mx-2">•</span>
+                                            <span class="badge bg-success">Remote</span>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    <div class="h4 text-success mb-1">@Model.SalaryRange</div>
+                                    <small class="text-muted">Posted @Model.PostedDate</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Job Info -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Job Type</h6>
+                                    <span class="badge bg-primary">@Model.JobType</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Category</h6>
+                                    <span class="badge bg-secondary">@Model.CategoryName</span>
+                                </div>
+                            </div>
+
+                            <!-- Job Description -->
+                            <div class="mb-4">
+                                <h5>Job Description</h5>
+                                <div class="job-description">
+                                    @Html.Raw(Model.Description.Replace("\n", "<br>"))
+                                </div>
+                            </div>
+
+                            <!-- Requirements -->
+                            @if (!string.IsNullOrEmpty(Model.Requirements))
+                            {
+                                <div class="mb-4">
+                                    <h5>Requirements</h5>
+                                    <div class="requirements">
+                                        @Html.Raw(Model.Requirements.Replace("\n", "<br>"))
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Tags -->
+                            @if (Model.Tags.Any())
+                            {
+                                <div class="mb-4">
+                                    <h5>Skills & Tags</h5>
+                                    <div class="tags">
+                                        @foreach (var tag in Model.Tags)
+                                        {
+                                            <span class="badge bg-light text-dark me-1 mb-1">@tag</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Job Status -->
+                            <div class="alert @(Model.IsExpired ? "alert-danger" : "alert-info")" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                @if (Model.IsExpired)
+                                {
+                                    <text>
+                                        <strong>This job has expired</strong> - It was posted on @Model.PostedDate and expired on @Model.ExpiresDate.
+                                    </text>
+                                }
+                                else
+                                {
+                                    <text>
+                                        <strong>This job is active</strong> - It was posted @Model.DaysSincePosted days ago and expires in @Model.DaysUntilExpires days.
+                                    </text>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Job Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <h6 class="text-muted mb-1">Salary</h6>
+                                    <strong>@Model.SalaryRange</strong>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="text-muted mb-1">Type</h6>
+                                    <span class="badge bg-primary">@Model.JobType</span>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <h6 class="text-muted mb-1">Location</h6>
+                                    <div>
+                                        @Model.Location
+                                        @if (Model.IsRemote)
+                                        {
+                                            <br><span class="badge bg-success">Remote</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="text-muted mb-1">Posted</h6>
+                                    <div>@Model.PostedDate</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6 class="text-muted mb-1">Expires</h6>
+                                    <div class="@(Model.IsExpired ? "text-danger" : "text-muted")">
+                                        @Model.ExpiresDate
+                                        @if (!Model.IsExpired)
+                                        {
+                                            <br><small>(@Model.DaysUntilExpires days left)</small>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Apply Button -->
+                    <div class="card mb-4">
+                        <div class="card-body text-center">
+                            @if (Model.IsExpired)
+                            {
+                                <button class="btn btn-secondary btn-lg w-100" disabled>
+                                    <i class="fas fa-ban me-2"></i>Job Expired
+                                </button>
+                                <small class="text-muted mt-2 d-block">This job posting has expired and is no longer accepting applications.</small>
+                            }
+                            else
+                            {
+                                <button class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-paper-plane me-2"></i>Apply Now
+                                </button>
+                                <small class="text-muted mt-2 d-block">You'll need to be logged in to apply for this position.</small>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Company Info -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">About @Model.CompanyName</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">Learn more about this company and their other job opportunities.</p>
+                            <a href="@Url.Action("Index", "Company")" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-building me-1"></i>View Company
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back to Jobs -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <a href="@Url.Action("Index", "Jobs")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to All Jobs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .job-description, .requirements {
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+
+    .tags .badge {
+        font-size: 0.8em;
+        padding: 0.4em 0.6em;
+    }
+
+    .card {
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: ">";
+    }
+</style>

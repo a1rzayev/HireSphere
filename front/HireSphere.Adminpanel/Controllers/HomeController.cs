@@ -6,7 +6,6 @@ using HireSphere.Adminpanel.Filters;
 
 namespace HireSphere.Adminpanel.Controllers;
 
-[ServiceFilter(typeof(SessionAuthorizationFilter))]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
@@ -18,7 +17,28 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        return View();
+        var accessToken = HttpContext.Session.GetString("AccessToken");
+        var userRole = HttpContext.Session.GetString("UserRole");
+
+        // Check if user is authenticated
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            return RedirectToAction("Login", "Auth");
+        }
+
+        // Redirect based on user role
+        if (int.TryParse(userRole, out var role))
+        {
+            return role switch
+            {
+                0 => View(), // Admin - show admin dashboard
+                1 => RedirectToAction("Dashboard", "Employer"), // Employer
+                2 => RedirectToAction("Dashboard", "JobSeeker"), // JobSeeker
+                _ => RedirectToAction("AccessDenied", "Auth")
+            };
+        }
+
+        return RedirectToAction("AccessDenied", "Auth");
     }
 
     public IActionResult Privacy()

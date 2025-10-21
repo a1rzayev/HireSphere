@@ -65,4 +65,9 @@ public class CompanyEfCoreRepository : ICompanyEfCoreRepository
     {
         return await _dbSet.Where(c => c.Location != null && c.Location.ToLower().Contains(location.ToLower())).ToListAsync();
     }
+
+    public async Task<int> GetTotalCompaniesCountAsync()
+    {
+        return await _dbSet.CountAsync();
+    }
 }

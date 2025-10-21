@@ -1,0 +1,212 @@
+@model HireSphere.Adminpanel.Models.EmployerDashboardViewModel
+@{
+    ViewData["Title"] = "Employer Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-briefcase me-2"></i>Employer Dashboard</h2>
+    <div>
+        <a href="@Url.Action("Create", "Job")" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Post New Job
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.TotalJobs</h4>
+                        <p class="card-text">Total Jobs</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-briefcase fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.ActiveJobs</h4>
+                        <p class="card-text">Active Jobs</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.TotalApplications</h4>
+                        <p class="card-text">Total Applications</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-file-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.PendingApplications</h4>
+                        <p class="card-text">Pending Applications</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h3 class="mb-3">Quick Actions</h3>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-plus fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Post New Job</h5>
+                        <p class="card-text">Create and publish a new job posting to attract candidates.</p>
+                        <a href="@Url.Action("Create", "Job")" class="btn btn-primary">
+                            <i class="fas fa-arrow-right me-1"></i>Post Job
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-list fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Manage Jobs</h5>
+                        <p class="card-text">View, edit, and manage your job postings.</p>
+                        <a href="@Url.Action("MyJobs", "Employer")" class="btn btn-success">
+                            <i class="fas fa-arrow-right me-1"></i>Manage Jobs
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Review Applications</h5>
+                        <p class="card-text">Review and manage job applications from candidates.</p>
+                        <a href="@Url.Action("Applications", "Employer")" class="btn btn-warning">
+                            <i class="fas fa-arrow-right me-1"></i>View Applications
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Jobs -->
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-briefcase me-2"></i>Recent Jobs</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Jobs.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var job in Model.Jobs.Take(5))
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">@job.Title</h6>
+                                    <small class="text-muted">@job.Location</small>
+                                </div>
+                                <span class="badge @(job.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(job.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </div>
+                        }
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="@Url.Action("MyJobs", "Employer")" class="btn btn-outline-primary btn-sm">
+                            View All Jobs
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center">No jobs posted yet.</p>
+                    <div class="text-center">
+                        <a href="@Url.Action("Create", "Job")" class="btn btn-primary btn-sm">
+                            Post Your First Job
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Recent Applications</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Applications.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var app in Model.Applications.Take(5))
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">@app.ApplicantName</h6>
+                                    <small class="text-muted">@app.JobTitle</small>
+                                </div>
+                                <span class="badge @(app.Status switch {
+                                    "Pending" => "bg-warning",
+                                    "Approved" => "bg-success",
+                                    "Rejected" => "bg-danger",
+                                    _ => "bg-secondary"
+                                })">
+                                    @app.Status
+                                </span>
+                            </div>
+                        }
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="@Url.Action("Applications", "Employer")" class="btn btn-outline-primary btn-sm">
+                            View All Applications
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center">No applications yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

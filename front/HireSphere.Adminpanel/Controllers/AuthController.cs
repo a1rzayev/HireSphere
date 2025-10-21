@@ -22,6 +22,148 @@ public class AuthController : Controller
         return View();
     }
 
+    [HttpGet]
+    public IActionResult AccessDenied()
+    {
+        return View();
+    }
+
+    [HttpGet]
+    public IActionResult Register()
+    {
+        return View(new RegistrationViewModel());
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Register(RegistrationViewModel model)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            if (!model.AgreeToTerms)
+            {
+                ModelState.AddModelError("AgreeToTerms", "You must agree to the terms and conditions.");
+                return View(model);
+            }
+
+            var baseUrl = _configuration["BASE_URL"];
+            
+            if (string.IsNullOrEmpty(baseUrl) || baseUrl == "baseurl")
+            {
+                ViewBag.ErrorMessage = "Configuration error: BASE_URL is not properly configured. Please set BASE_URL in appsettings.json";
+                return View(model);
+            }
+
+            var registrationRequest = new
+            {
+                Name = model.Name.Trim(),
+                Surname = model.Surname.Trim(),
+                Email = model.Email.Trim(),
+                Password = model.Password,
+                ConfirmPassword = model.ConfirmPassword,
+                Phone = model.Phone.Trim(),
+                Role = model.Role
+            };
+
+            var json = JsonSerializer.Serialize(registrationRequest);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync($"{baseUrl}/api/auth/register", content);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var authResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
+                
+                if (authResponse.TryGetProperty("success", out var success) && success.GetBoolean())
+                {
+                    TempData["SuccessMessage"] = "Registration successful! You can now login with your credentials.";
+                    return RedirectToAction("Login");
+                }
+                else
+                {
+                    // Handle API error response
+                    if (authResponse.TryGetProperty("message", out var message))
+                    {
+                        var errorMessage = message.GetString() ?? "Registration failed. Please try again.";
+                        
+                        // Convert technical error messages to user-friendly ones
+                        if (errorMessage.Contains("already exists") || errorMessage.Contains("email already"))
+                        {
+                            ViewBag.ErrorMessage = "This email is already in use. Please use a different email address.";
+                        }
+                        else if (errorMessage.Contains("password"))
+                        {
+                            ViewBag.ErrorMessage = "Password requirements not met. Please check your password.";
+                        }
+                        else if (errorMessage.Contains("validation"))
+                        {
+                            ViewBag.ErrorMessage = "Please check all fields and try again.";
+                        }
+                        else
+                        {
+                            ViewBag.ErrorMessage = errorMessage;
+                        }
+                    }
+                    else
+                    {
+                        ViewBag.ErrorMessage = "Registration failed. Please try again.";
+                    }
+                    return View(model);
+                }
+            }
+            else
+            {
+                // Handle HTTP error response
+                try
+                {
+                    var errorResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
+                    if (errorResponse.TryGetProperty("message", out var errorMessage))
+                    {
+                        var apiErrorMessage = errorMessage.GetString() ?? "Registration failed. Please try again.";
+                        
+                        // Convert technical error messages to user-friendly ones
+                        if (apiErrorMessage.Contains("already exists") || apiErrorMessage.Contains("email already"))
+                        {
+                            ViewBag.ErrorMessage = "This email is already in use. Please use a different email address.";
+                        }
+                        else if (apiErrorMessage.Contains("password"))
+                        {
+                            ViewBag.ErrorMessage = "Password requirements not met. Please check your password.";
+                        }
+                        else if (apiErrorMessage.Contains("validation"))
+                        {
+                            ViewBag.ErrorMessage = "Please check all fields and try again.";
+                        }
+                        else
+                        {
+                            ViewBag.ErrorMessage = apiErrorMessage;
+                        }
+                    }
+                    else
+                    {
+                        ViewBag.ErrorMessage = "Registration failed. Please try again.";
+                    }
+                }
+                catch
+                {
+                    ViewBag.ErrorMessage = "Registration failed. Please try again.";
+                }
+                return View(model);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Registration error: {ex.Message}");
+            ViewBag.ErrorMessage = "An error occurred during registration. Please try again.";
+            return View(model);
+        }
+    }
+
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
@@ -59,8 +201,7 @@ public class AuthController : Controller
             var loginRequest = new
             {
                 Email = model.Email.Trim(),
-                Password = model.Password,
-                Role = 0
+                Password = model.Password
             };
 
             var json = JsonSerializer.Serialize(loginRequest);
@@ -124,25 +265,26 @@ public class AuthController : Controller
             {
                 if (authResponse.TryGetProperty("success", out var success) && success.GetBoolean())
                 {
-                    bool isAdmin = false;
+                    int userRole = -1;
                     if (authResponse.TryGetProperty("user", out var userElement) && userElement.ValueKind != JsonValueKind.Null)
                     {
                         if (userElement.TryGetProperty("role", out var role))
                         {
                             if (role.ValueKind == JsonValueKind.Number)
                             {
-                                isAdmin = role.GetInt32() == 0; 
+                                userRole = role.GetInt32(); 
                             }
                             else if (role.ValueKind == JsonValueKind.String)
                             {
-                                isAdmin = role.GetString() == "0";
+                                int.TryParse(role.GetString(), out userRole);
                             }
                         }
                     }
 
-                    if (!isAdmin)
+                    // Allow Admin (0), Employer (1), and JobSeeker (2) roles
+                    if (userRole < 0 || userRole > 2)
                     {
-                        ViewBag.ErrorMessage = "Access denied. This application requires Admin privileges. Your account does not have the required role. Please use the appropriate application for your user type.";
+                        ViewBag.ErrorMessage = "Access denied. Invalid user role. Please contact support.";
                         return View(model);
                     }
 

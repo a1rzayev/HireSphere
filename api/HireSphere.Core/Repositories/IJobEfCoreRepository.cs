@@ -15,4 +15,9 @@ public interface IJobEfCoreRepository
     Task<IEnumerable<Job>> GetByCompanyIdAsync(Guid companyId);
     Task<IEnumerable<Job>> GetByCategoryIdAsync(Guid categoryId);
     Task<IEnumerable<Job>> GetActiveJobsAsync();
+    Task<IEnumerable<Job>> GetRecentActiveJobsAsync(int count);
+    Task<IEnumerable<Job>> GetFeaturedJobsAsync(int count);
+    Task<IEnumerable<Job>> GetActiveJobsWithFiltersAsync(int page, int pageSize, string? search, string? location, string? jobType, Guid? categoryId, bool? isRemote);
+    Task<int> GetTotalActiveJobsCountAsync();
+    Task<int> GetActiveJobsCountAsync();
 }

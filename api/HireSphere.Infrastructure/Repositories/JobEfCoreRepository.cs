@@ -65,4 +65,71 @@ public class JobEfCoreRepository : IJobEfCoreRepository
     {
         return await _dbSet.Where(j => j.IsActive && j.ExpiresAt > DateTime.UtcNow).ToListAsync();
     }
+
+    public async Task<IEnumerable<Job>> GetRecentActiveJobsAsync(int count)
+    {
+        return await _dbSet
+            .Where(j => j.IsActive && j.ExpiresAt > DateTime.UtcNow)
+            .OrderByDescending(j => j.PostedAt)
+            .Take(count)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Job>> GetFeaturedJobsAsync(int count)
+    {
+        // For now, return recent active jobs as featured
+        // You can implement custom logic for featured jobs later
+        return await _dbSet
+            .Where(j => j.IsActive && j.ExpiresAt > DateTime.UtcNow)
+            .OrderByDescending(j => j.PostedAt)
+            .Take(count)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Job>> GetActiveJobsWithFiltersAsync(int page, int pageSize, string? search, string? location, string? jobType, Guid? categoryId, bool? isRemote)
+    {
+        var query = _dbSet
+            .Where(j => j.IsActive && j.ExpiresAt > DateTime.UtcNow);
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            query = query.Where(j => j.Title.Contains(search) || j.Description.Contains(search));
+        }
+
+        if (!string.IsNullOrEmpty(location))
+        {
+            query = query.Where(j => j.Location != null && j.Location.Contains(location));
+        }
+
+        if (!string.IsNullOrEmpty(jobType))
+        {
+            query = query.Where(j => j.JobType.ToString() == jobType);
+        }
+
+        if (categoryId.HasValue)
+        {
+            query = query.Where(j => j.CategoryId == categoryId.Value);
+        }
+
+        if (isRemote.HasValue)
+        {
+            query = query.Where(j => j.IsRemote == isRemote.Value);
+        }
+
+        return await query
+            .OrderByDescending(j => j.PostedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetTotalActiveJobsCountAsync()
+    {
+        return await _dbSet.CountAsync(j => j.IsActive && j.ExpiresAt > DateTime.UtcNow);
+    }
+
+    public async Task<int> GetActiveJobsCountAsync()
+    {
+        return await _dbSet.CountAsync(j => j.IsActive && j.ExpiresAt > DateTime.UtcNow);
+    }
 }

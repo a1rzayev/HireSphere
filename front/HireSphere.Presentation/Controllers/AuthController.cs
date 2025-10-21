@@ -103,13 +103,86 @@ public class AuthController : Controller
 
             if (response.IsSuccessStatusCode)
             {
-                ViewBag.SuccessMessage = "Registration successful! Please log in with your new account.";
-                return RedirectToAction("Login");
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var authResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
+                
+                if (authResponse.TryGetProperty("success", out var success) && success.GetBoolean())
+                {
+                    ViewBag.SuccessMessage = "Registration successful! Please log in with your new account.";
+                    return RedirectToAction("Login");
+                }
+                else
+                {
+                    // Handle API error response
+                    if (authResponse.TryGetProperty("message", out var message))
+                    {
+                        var errorMessage = message.GetString() ?? "Registration failed. Please try again.";
+                        
+                        // Convert technical error messages to user-friendly ones
+                        if (errorMessage.Contains("already exists") || errorMessage.Contains("email already"))
+                        {
+                            ViewBag.ErrorMessage = "This email is already in use. Please use a different email address.";
+                        }
+                        else if (errorMessage.Contains("password"))
+                        {
+                            ViewBag.ErrorMessage = "Password requirements not met. Please check your password.";
+                        }
+                        else if (errorMessage.Contains("validation"))
+                        {
+                            ViewBag.ErrorMessage = "Please check all fields and try again.";
+                        }
+                        else
+                        {
+                            ViewBag.ErrorMessage = errorMessage;
+                        }
+                    }
+                    else
+                    {
+                        ViewBag.ErrorMessage = "Registration failed. Please try again.";
+                    }
+                    return View(model);
+                }
             }
-
-            var errorContent = await response.Content.ReadAsStringAsync();
-            ViewBag.ErrorMessage = $"Registration failed: {errorContent}";
-            return View(model);
+            else
+            {
+                // Handle HTTP error response
+                var errorContent = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    var errorResponse = JsonSerializer.Deserialize<JsonElement>(errorContent);
+                    if (errorResponse.TryGetProperty("message", out var errorMessage))
+                    {
+                        var apiErrorMessage = errorMessage.GetString() ?? "Registration failed. Please try again.";
+                        
+                        // Convert technical error messages to user-friendly ones
+                        if (apiErrorMessage.Contains("already exists") || apiErrorMessage.Contains("email already"))
+                        {
+                            ViewBag.ErrorMessage = "This email is already in use. Please use a different email address.";
+                        }
+                        else if (apiErrorMessage.Contains("password"))
+                        {
+                            ViewBag.ErrorMessage = "Password requirements not met. Please check your password.";
+                        }
+                        else if (apiErrorMessage.Contains("validation"))
+                        {
+                            ViewBag.ErrorMessage = "Please check all fields and try again.";
+                        }
+                        else
+                        {
+                            ViewBag.ErrorMessage = apiErrorMessage;
+                        }
+                    }
+                    else
+                    {
+                        ViewBag.ErrorMessage = "Registration failed. Please try again.";
+                    }
+                }
+                catch
+                {
+                    ViewBag.ErrorMessage = "Registration failed. Please try again.";
+                }
+                return View(model);
+            }
         }
         catch (Exception ex)
         {

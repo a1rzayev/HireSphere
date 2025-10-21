@@ -84,6 +84,45 @@
                                 </a></li>
                             </ul>
                         </li>
+                        
+                        <!-- Employer Navigation -->
+                        <li class="nav-item employer-nav-item" style="display: none;">
+                            <a class="nav-link text-dark" asp-controller="Employer" asp-action="Dashboard">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item employer-nav-item" style="display: none;">
+                            <a class="nav-link text-dark" asp-controller="Employer" asp-action="MyJobs">
+                                <i class="fas fa-briefcase me-1"></i>My Jobs
+                            </a>
+                        </li>
+                        <li class="nav-item employer-nav-item" style="display: none;">
+                            <a class="nav-link text-dark" asp-controller="Employer" asp-action="Applications">
+                                <i class="fas fa-file-alt me-1"></i>Applications
+                            </a>
+                        </li>
+                        <li class="nav-item employer-nav-item" style="display: none;">
+                            <a class="nav-link text-dark" asp-controller="Job" asp-action="Create">
+                                <i class="fas fa-plus me-1"></i>Post Job
+                            </a>
+                        </li>
+                        
+                        <!-- JobSeeker Navigation -->
+                        <li class="nav-item jobseeker-nav-item" style="display: none;">
+                            <a class="nav-link text-dark" asp-controller="JobSeeker" asp-action="Dashboard">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item jobseeker-nav-item" style="display: none;">
+                            <a class="nav-link text-dark" asp-controller="JobSeeker" asp-action="BrowseJobs">
+                                <i class="fas fa-search me-1"></i>Browse Jobs
+                            </a>
+                        </li>
+                        <li class="nav-item jobseeker-nav-item" style="display: none;">
+                            <a class="nav-link text-dark" asp-controller="JobSeeker" asp-action="MyApplications">
+                                <i class="fas fa-file-alt me-1"></i>My Applications
+                            </a>
+                        </li>
                     </ul>
                     <ul class="navbar-nav" id="auth-nav">
                         <li class="nav-item" id="login-nav-item">
@@ -123,21 +162,48 @@
             const loginNavItem = document.getElementById('login-nav-item');
             const logoutNavItem = document.getElementById('logout-nav-item');
             const adminNavItems = document.querySelectorAll('.admin-nav-item');
+            const employerNavItems = document.querySelectorAll('.employer-nav-item');
+            const jobseekerNavItems = document.querySelectorAll('.jobseeker-nav-item');
             
             // Check if we're on a page that has session data available
             const sessionAccessToken = '@Context.Session.GetString("AccessToken")';
             const sessionUserRole = '@Context.Session.GetString("UserRole")';
             
-            const hasValidSession = sessionAccessToken && sessionUserRole === '0';
+            const hasValidSession = sessionAccessToken && sessionUserRole;
             
             if (hasValidSession) {
                 if (loginNavItem) loginNavItem.style.display = 'none';
                 if (logoutNavItem) logoutNavItem.style.display = 'block';
-                adminNavItems.forEach(item => item.style.display = 'block');
+                
+                // Show navigation based on user role
+                const userRole = parseInt(sessionUserRole);
+                switch (userRole) {
+                    case 0: // Admin
+                        adminNavItems.forEach(item => item.style.display = 'block');
+                        employerNavItems.forEach(item => item.style.display = 'none');
+                        jobseekerNavItems.forEach(item => item.style.display = 'none');
+                        break;
+                    case 1: // Employer
+                        adminNavItems.forEach(item => item.style.display = 'none');
+                        employerNavItems.forEach(item => item.style.display = 'block');
+                        jobseekerNavItems.forEach(item => item.style.display = 'none');
+                        break;
+                    case 2: // JobSeeker
+                        adminNavItems.forEach(item => item.style.display = 'none');
+                        employerNavItems.forEach(item => item.style.display = 'none');
+                        jobseekerNavItems.forEach(item => item.style.display = 'block');
+                        break;
+                    default:
+                        adminNavItems.forEach(item => item.style.display = 'none');
+                        employerNavItems.forEach(item => item.style.display = 'none');
+                        jobseekerNavItems.forEach(item => item.style.display = 'none');
+                }
             } else {
                 if (loginNavItem) loginNavItem.style.display = 'block';
                 if (logoutNavItem) logoutNavItem.style.display = 'none';
                 adminNavItems.forEach(item => item.style.display = 'none');
+                employerNavItems.forEach(item => item.style.display = 'none');
+                jobseekerNavItems.forEach(item => item.style.display = 'none');
             }
         }
     </script>

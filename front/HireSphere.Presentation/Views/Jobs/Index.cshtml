@@ -1,0 +1,295 @@
+@model HireSphere.Presentation.Models.JobsListViewModel
+@{
+    ViewData["Title"] = "Job Opportunities";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-filter me-2"></i>Filter Jobs</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" asp-action="Index">
+                        <div class="mb-3">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="search" name="search" value="@Model.SearchTerm" placeholder="Job title, keywords...">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" name="location" value="@Model.Location" placeholder="City, state, country...">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="jobType" class="form-label">Job Type</label>
+                            <select class="form-select" id="jobType" name="jobType">
+                                <option value="">All Types</option>
+                                @if (Model.JobType == "FullTime")
+                                {
+                                    <option value="FullTime" selected>Full Time</option>
+                                }
+                                else
+                                {
+                                    <option value="FullTime">Full Time</option>
+                                }
+                                @if (Model.JobType == "PartTime")
+                                {
+                                    <option value="PartTime" selected>Part Time</option>
+                                }
+                                else
+                                {
+                                    <option value="PartTime">Part Time</option>
+                                }
+                                @if (Model.JobType == "Contract")
+                                {
+                                    <option value="Contract" selected>Contract</option>
+                                }
+                                else
+                                {
+                                    <option value="Contract">Contract</option>
+                                }
+                                @if (Model.JobType == "Internship")
+                                {
+                                    <option value="Internship" selected>Internship</option>
+                                }
+                                else
+                                {
+                                    <option value="Internship">Internship</option>
+                                }
+                                @if (Model.JobType == "Temporary")
+                                {
+                                    <option value="Temporary" selected>Temporary</option>
+                                }
+                                else
+                                {
+                                    <option value="Temporary">Temporary</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="isRemote" name="isRemote" value="true" @(Model.IsRemote ? "checked" : "")>
+                                <label class="form-check-label" for="isRemote">
+                                    Remote Work
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>Search Jobs
+                            </button>
+                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Clear Filters
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-briefcase me-2"></i>Job Opportunities</h2>
+                <div class="text-muted">
+                    <span class="badge bg-primary">@Model.TotalCount jobs found</span>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>@ViewBag.ErrorMessage
+                </div>
+            }
+            else if (Model.TotalCount == 0 && string.IsNullOrEmpty(Model.SearchTerm) && string.IsNullOrEmpty(Model.Location) && string.IsNullOrEmpty(Model.JobType) && !Model.IsRemote)
+            {
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>No jobs are currently available. Check back later for new opportunities!
+                </div>
+            }
+
+            @if (Model.Jobs.Any())
+            {
+                <!-- Job Listings -->
+                <div class="row">
+                    @foreach (var job in Model.Jobs)
+                    {
+                        <div class="col-12 mb-3">
+                            <div class="card job-card h-100">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h5 class="card-title">
+                                                <a href="@Url.Action("Details", new { id = job.Id })" class="text-decoration-none">
+                                                    @job.Title
+                                                </a>
+                                            </h5>
+                                            <p class="card-text text-muted mb-2">
+                                                <i class="fas fa-building me-1"></i>@job.CompanyName
+                                                <span class="mx-2">•</span>
+                                                <i class="fas fa-map-marker-alt me-1"></i>@job.Location
+                                                @if (job.IsRemote)
+                                                {
+                                                    <span class="mx-2">•</span>
+                                                    <span class="badge bg-success">Remote</span>
+                                                }
+                                            </p>
+                                            <p class="card-text">
+                                                <span class="badge bg-primary me-1">@job.JobType</span>
+                                                @if (!string.IsNullOrEmpty(job.CategoryName))
+                                                {
+                                                    <span class="badge bg-secondary me-1">@job.CategoryName</span>
+                                                }
+                                                <span class="text-muted">Posted @job.PostedDate</span>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <div class="mb-2">
+                                                <strong class="text-success">@job.SalaryRange</strong>
+                                            </div>
+                                            <div class="mb-2">
+                                                <small class="text-muted">
+                                                    @if (job.IsExpired)
+                                                    {
+                                                        <span class="text-danger">Expired</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>Expires in @job.DaysUntilExpires days</span>
+                                                    }
+                                                </small>
+                                            </div>
+                                            <a href="@Url.Action("Details", new { id = job.Id })" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Job pagination">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.HasPreviousPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { 
+                                        search = Model.SearchTerm, 
+                                        location = Model.Location, 
+                                        jobType = Model.JobType, 
+                                        category = Model.Category, 
+                                        isRemote = Model.IsRemote, 
+                                        page = Model.PreviousPage 
+                                    })">
+                                        <i class="fas fa-chevron-left"></i> Previous
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { 
+                                        search = Model.SearchTerm, 
+                                        location = Model.Location, 
+                                        jobType = Model.JobType, 
+                                        category = Model.Category, 
+                                        isRemote = Model.IsRemote, 
+                                        page = i 
+                                    })">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.HasNextPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { 
+                                        search = Model.SearchTerm, 
+                                        location = Model.Location, 
+                                        jobType = Model.JobType, 
+                                        category = Model.Category, 
+                                        isRemote = Model.IsRemote, 
+                                        page = Model.NextPage 
+                                    })">
+                                        Next <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No jobs found</h4>
+                    <p class="text-muted">
+                        @if (Model.TotalCount == 0)
+                        {
+                            <text>No jobs are currently available in the system. Check back later for new opportunities!</text>
+                        }
+                        else
+                        {
+                            <text>Try adjusting your search criteria or check back later for new opportunities.</text>
+                        }
+                    </p>
+                    <a href="@Url.Action("Index")" class="btn btn-primary">
+                        <i class="fas fa-refresh me-1"></i>View All Jobs
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .job-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: 1px solid #e9ecef;
+    }
+
+    .job-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-title a {
+        color: #212529;
+    }
+
+    .card-title a:hover {
+        color: #0d6efd;
+    }
+
+    .badge {
+        font-size: 0.75em;
+    }
+
+    .pagination .page-link {
+        color: #0d6efd;
+        border-color: #dee2e6;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    .pagination .page-link:hover {
+        color: #0a58ca;
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+</style>
