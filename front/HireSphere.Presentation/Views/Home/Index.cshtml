@@ -1,11 +1,317 @@
-﻿@{
+﻿@model HireSphere.Presentation.Models.HomePageViewModel
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Welcome Section -->
+            <div class="jumbotron bg-primary text-white rounded p-4 mb-4">
+                <h1 class="display-4">Welcome to HireSphere</h1>
+                <p class="lead">Connect with professionals, discover opportunities, and share your insights with the community.</p>
+                <div class="d-flex gap-3">
+                    <a href="@Url.Action("Index", "Jobs")" class="btn btn-light">
+                        <i class="fas fa-briefcase me-2"></i>Find Jobs
+                    </a>
+                    <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                        <i class="fas fa-plus me-2"></i>Share Post
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Posts -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-newspaper me-2"></i>Community Posts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentPosts.Any())
+                    {
+                        @foreach (var post in Model.RecentPosts)
+                        {
+                            <div class="post-item border-bottom pb-3 mb-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0">
+                                        <div class="avatar-circle">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="mb-1 fw-bold">@post.AuthorName</h6>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock me-1"></i>@post.TimeAgo
+                                                </small>
+                                            </div>
+                                        </div>
+                                        
+                                        <h6 class="mb-2">
+                                            <a href="@Url.Action("Details", "Posts", new { id = post.Id })" class="text-decoration-none">
+                                                @post.Title
+                                            </a>
+                                        </h6>
+                                        
+                                        <p class="text-muted mb-2">@post.ShortContent</p>
+                                        
+                                        @if (post.Tags.Any())
+                                        {
+                                            <div class="mb-2">
+                                                @foreach (var tag in post.Tags.Take(3))
+                                                {
+                                                    <span class="badge bg-light text-dark me-1">#@tag</span>
+                                                }
+                                            </div>
+                                        }
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex gap-3">
+                                                <button class="btn btn-sm btn-outline-primary like-btn" data-post-id="@post.Id">
+                                                    <i class="fas fa-heart @(post.IsLiked ? "text-danger" : "")"></i>
+                                                    <span class="ms-1">@post.LikesCount</span>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary">
+                                                    <i class="fas fa-comment"></i>
+                                                    <span class="ms-1">@post.CommentsCount</span>
+                                                </button>
+                                            </div>
+                                            <a href="@Url.Action("Details", "Posts", new { id = post.Id })" class="btn btn-sm btn-outline-primary">
+                                                Read More
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No posts yet</h5>
+                            <p class="text-muted">Be the first to share something with the community!</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                                <i class="fas fa-plus me-1"></i>Create First Post
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <i class="fas fa-plus me-2"></i>Create Post
+                        </button>
+                        <a href="@Url.Action("Index", "Jobs")" class="btn btn-outline-primary">
+                            <i class="fas fa-briefcase me-2"></i>Browse Jobs
+                        </a>
+                        <a href="@Url.Action("Index", "Company")" class="btn btn-outline-secondary">
+                            <i class="fas fa-building me-2"></i>View Companies
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Tags -->
+            @if (Model.PopularTags.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Popular Tags</h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var tag in Model.PopularTags)
+                        {
+                            <span class="badge bg-light text-dark me-1 mb-1">#@tag</span>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Community Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">@Model.TotalPosts</h4>
+                            <small class="text-muted">Posts</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">@Model.TotalUsers</h4>
+                            <small class="text-muted">Users</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .jumbotron {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .post-item:last-child {
+        border-bottom: none !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        background-color: #6c757d;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2em;
+    }
+
+    .badge {
+        font-size: 0.75em;
+    }
+
+    .like-btn:hover {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+</style>
+
+<script>
+    // Like functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const likeButtons = document.querySelectorAll('.like-btn');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const postId = this.getAttribute('data-post-id');
+                const heartIcon = this.querySelector('i.fa-heart');
+                const countSpan = this.querySelector('span');
+                
+                // Toggle like state
+                if (heartIcon.classList.contains('text-danger')) {
+                    heartIcon.classList.remove('text-danger');
+                    countSpan.textContent = parseInt(countSpan.textContent) - 1;
+                } else {
+                    heartIcon.classList.add('text-danger');
+                    countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                }
+                
+                // Here you would make an API call to like/unlike the post
+                console.log('Liked post:', postId);
+            });
+        });
+    });
+</script>
+
+<!-- Create Post Modal -->
+<div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPostModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Create New Post
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createPostForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="postTitle" class="form-label">Post Title</label>
+                        <input type="text" class="form-control" id="postTitle" name="title" placeholder="Enter a compelling title for your post" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="postContent" class="form-label">What's on your mind?</label>
+                        <textarea class="form-control" id="postContent" name="content" rows="4" placeholder="Share your thoughts, experiences, or insights..." required></textarea>
+                        <div class="form-text">
+                            <span id="modalCharCount">0</span> / 2000 characters
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="postTags" class="form-label">Tags (comma-separated)</label>
+                        <input type="text" class="form-control" id="postTags" name="tags" placeholder="technology, career, tips">
+                        <div class="form-text">Add relevant tags to help others find your post</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="postImageUrl" class="form-label">Image URL (optional)</label>
+                        <input type="url" class="form-control" id="postImageUrl" name="imageUrl" placeholder="https://example.com/image.jpg">
+                        <div class="form-text">Optional: Add an image URL to make your post more engaging</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Publish Post
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Modal form functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const postContent = document.getElementById('postContent');
+        const modalCharCount = document.getElementById('modalCharCount');
+        
+        if (postContent && modalCharCount) {
+            postContent.addEventListener('input', function() {
+                const charCount = this.value.length;
+                modalCharCount.textContent = charCount;
+                
+                if (charCount > 2000) {
+                    modalCharCount.classList.add('text-danger');
+                } else {
+                    modalCharCount.classList.remove('text-danger');
+                }
+            });
+        }
+        
+        // Handle form submission
+        const createPostForm = document.getElementById('createPostForm');
+        if (createPostForm) {
+            createPostForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Here you would handle the form submission
+                // For now, just show a success message
+                alert('Post created successfully! (This is a demo - actual implementation would submit to API)');
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createPostModal'));
+                modal.hide();
+                
+                // Reset form
+                createPostForm.reset();
+                modalCharCount.textContent = '0';
+                modalCharCount.classList.remove('text-danger');
+            });
+        }
+    });
+</script>
 
 @section Scripts {
     @if (ViewBag.ClearLocalStorage == true)

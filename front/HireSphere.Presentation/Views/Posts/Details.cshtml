@@ -1,0 +1,301 @@
+@model HireSphere.Presentation.Models.PostViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="@Url.Action("Index", "Home")">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="@Url.Action("Index", "Posts")">Posts</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+                </ol>
+            </nav>
+
+            @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>@ViewBag.ErrorMessage
+                </div>
+            }
+
+            <div class="row">
+                <!-- Main Content -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- Author Info -->
+                            <div class="d-flex align-items-start mb-4">
+                                <div class="flex-shrink-0">
+                                    <div class="avatar-circle-large">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">@Model.AuthorName</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>@Model.TimeAgo
+                                                @if (Model.UpdatedAt.HasValue && Model.UpdatedAt.Value > Model.CreatedAt)
+                                                {
+                                                    <span class="ms-2">
+                                                        <i class="fas fa-edit me-1"></i>Edited @Model.UpdatedAt.Value.ToString("MMM dd, yyyy")
+                                                    </span>
+                                                }
+                                            </small>
+                                        </div>
+                                        @if (Model.IsAuthor)
+                                        {
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Edit Post</a></li>
+                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Delete Post</a></li>
+                                                </ul>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Post Title -->
+                            <h1 class="mb-4">@Model.Title</h1>
+
+                            <!-- Post Image -->
+                            @if (Model.HasImage)
+                            {
+                                <div class="post-image mb-4">
+                                    <img src="@Model.ImageUrl" alt="Post image" class="img-fluid rounded">
+                                </div>
+                            }
+
+                            <!-- Post Content -->
+                            <div class="post-content mb-4">
+                                @Html.Raw(Model.Content.Replace("\n", "<br>"))
+                            </div>
+
+                            <!-- Tags -->
+                            @if (Model.Tags.Any())
+                            {
+                                <div class="mb-4">
+                                    <h6>Tags</h6>
+                                    @foreach (var tag in Model.Tags)
+                                    {
+                                        <span class="badge bg-light text-dark me-1 mb-1">#@tag</span>
+                                    }
+                                </div>
+                            }
+
+                            <!-- Post Actions -->
+                            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                <div class="d-flex gap-3">
+                                    <button class="btn btn-outline-primary like-btn" data-post-id="@Model.Id">
+                                        <i class="fas fa-heart @(Model.IsLiked ? "text-danger" : "")"></i>
+                                        <span class="ms-1">@Model.LikesCount</span>
+                                    </button>
+                                    <button class="btn btn-outline-secondary">
+                                        <i class="fas fa-comment"></i>
+                                        <span class="ms-1">@Model.CommentsCount</span>
+                                    </button>
+                                    <button class="btn btn-outline-secondary">
+                                        <i class="fas fa-share"></i>
+                                        <span class="ms-1">Share</span>
+                                    </button>
+                                </div>
+                                <div class="text-muted">
+                                    <small>Posted on @Model.CreatedDate at @Model.CreatedTime</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-comments me-2"></i>Comments (@Model.CommentsCount)
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Comment Form -->
+                            <div class="mb-4">
+                                <form>
+                                    <div class="form-floating">
+                                        <textarea class="form-control" placeholder="Write a comment..." style="height: 100px"></textarea>
+                                        <label>Write a comment...</label>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-paper-plane me-1"></i>Post Comment
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Comments List -->
+                            <div class="comments-list">
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-comment-slash fa-2x mb-2"></i>
+                                    <p>No comments yet. Be the first to comment!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Author Info Card -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">About the Author</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="avatar-circle-large mx-auto mb-3">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h6 class="fw-bold">@Model.AuthorName</h6>
+                            <p class="text-muted small">@Model.AuthorEmail</p>
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-user-plus me-1"></i>Follow
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Related Posts -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Related Posts</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center text-muted py-3">
+                                <i class="fas fa-newspaper fa-2x mb-2"></i>
+                                <p>No related posts found</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Popular Tags -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Popular Tags</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Tags.Any())
+                            {
+                                @foreach (var tag in Model.Tags)
+                                {
+                                    <span class="badge bg-light text-dark me-1 mb-1">#@tag</span>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted small">No tags available</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back to Posts -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <a href="@Url.Action("Index", "Posts")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to All Posts
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle-large {
+        width: 60px;
+        height: 60px;
+        background-color: #6c757d;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5em;
+    }
+
+    .post-image img {
+        max-height: 400px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .post-content {
+        line-height: 1.6;
+        font-size: 1.1em;
+    }
+
+    .card {
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: ">";
+    }
+
+    .like-btn:hover {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+
+    .badge {
+        font-size: 0.8em;
+        padding: 0.4em 0.6em;
+    }
+</style>
+
+<script>
+    // Like functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const likeButton = document.querySelector('.like-btn');
+        if (likeButton) {
+            likeButton.addEventListener('click', function() {
+                const postId = this.getAttribute('data-post-id');
+                const heartIcon = this.querySelector('i.fa-heart');
+                const countSpan = this.querySelector('span');
+                
+                // Toggle like state
+                if (heartIcon.classList.contains('text-danger')) {
+                    heartIcon.classList.remove('text-danger');
+                    countSpan.textContent = parseInt(countSpan.textContent) - 1;
+                } else {
+                    heartIcon.classList.add('text-danger');
+                    countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                }
+                
+                // Here you would make an API call to like/unlike the post
+                console.log('Liked post:', postId);
+            });
+        }
+    });
+</script>

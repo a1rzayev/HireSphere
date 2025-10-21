@@ -1,0 +1,309 @@
+@model HireSphere.Presentation.Models.PostsListViewModel
+@{
+    ViewData["Title"] = "Posts";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-filter me-2"></i>Filter Posts</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" asp-action="Index">
+                        <div class="mb-3">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="search" name="search" value="@Model.SearchTerm" placeholder="Search posts...">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tag" class="form-label">Tag</label>
+                            <input type="text" class="form-control" id="tag" name="tag" value="@Model.TagFilter" placeholder="Filter by tag...">
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>Search Posts
+                            </button>
+                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Clear Filters
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Create Post Button -->
+            <div class="card mt-3">
+                <div class="card-body text-center">
+                    <a href="@Url.Action("Create")" class="btn btn-success btn-lg w-100">
+                        <i class="fas fa-plus me-2"></i>Create New Post
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-newspaper me-2"></i>Community Posts</h2>
+                <div class="text-muted">
+                    <span class="badge bg-primary">@Model.TotalCount posts found</span>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>@ViewBag.ErrorMessage
+                </div>
+            }
+
+            @if (Model.Posts.Any())
+            {
+                <!-- Posts Feed -->
+                <div class="row">
+                    @foreach (var post in Model.Posts)
+                    {
+                        <div class="col-12 mb-4">
+                            <div class="card post-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start mb-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="avatar-circle">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold">@post.AuthorName</h6>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock me-1"></i>@post.TimeAgo
+                                                    </small>
+                                                </div>
+                                                @if (post.IsAuthor)
+                                                {
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                                            <i class="fas fa-ellipsis-v"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Delete</a></li>
+                                                        </ul>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h5 class="card-title">
+                                        <a href="@Url.Action("Details", new { id = post.Id })" class="text-decoration-none">
+                                            @post.Title
+                                        </a>
+                                    </h5>
+
+                                    <p class="card-text">@post.ShortContent</p>
+
+                                    @if (post.HasImage)
+                                    {
+                                        <div class="post-image mb-3">
+                                            <img src="@post.ImageUrl" alt="Post image" class="img-fluid rounded">
+                                        </div>
+                                    }
+
+                                    @if (post.Tags.Any())
+                                    {
+                                        <div class="mb-3">
+                                            @foreach (var tag in post.Tags)
+                                            {
+                                                <span class="badge bg-light text-dark me-1">#@tag</span>
+                                            }
+                                        </div>
+                                    }
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex gap-3">
+                                            <button class="btn btn-sm btn-outline-primary like-btn" data-post-id="@post.Id">
+                                                <i class="fas fa-heart @(post.IsLiked ? "text-danger" : "")"></i>
+                                                <span class="ms-1">@post.LikesCount</span>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-comment"></i>
+                                                <span class="ms-1">@post.CommentsCount</span>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-share"></i>
+                                            </button>
+                                        </div>
+                                        <a href="@Url.Action("Details", new { id = post.Id })" class="btn btn-outline-primary btn-sm">
+                                            Read More
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Posts pagination">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.HasPreviousPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { 
+                                        search = Model.SearchTerm, 
+                                        tag = Model.TagFilter, 
+                                        page = Model.PreviousPage 
+                                    })">
+                                        <i class="fas fa-chevron-left"></i> Previous
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { 
+                                        search = Model.SearchTerm, 
+                                        tag = Model.TagFilter, 
+                                        page = i 
+                                    })">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.HasNextPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { 
+                                        search = Model.SearchTerm, 
+                                        tag = Model.TagFilter, 
+                                        page = Model.NextPage 
+                                    })">
+                                        Next <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No posts found</h4>
+                    <p class="text-muted">
+                        @if (Model.TotalCount == 0)
+                        {
+                            <text>No posts have been created yet. Be the first to share something!</text>
+                        }
+                        else
+                        {
+                            <text>Try adjusting your search criteria or check back later for new posts.</text>
+                        }
+                    </p>
+                    <a href="@Url.Action("Create")" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Create First Post
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .post-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: 1px solid #e9ecef;
+    }
+
+    .post-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        background-color: #6c757d;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2em;
+    }
+
+    .post-image img {
+        max-height: 300px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .card-title a {
+        color: #212529;
+    }
+
+    .card-title a:hover {
+        color: #0d6efd;
+    }
+
+    .badge {
+        font-size: 0.75em;
+    }
+
+    .pagination .page-link {
+        color: #0d6efd;
+        border-color: #dee2e6;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    .pagination .page-link:hover {
+        color: #0a58ca;
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+
+    .like-btn:hover {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+</style>
+
+<script>
+    // Like functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const likeButtons = document.querySelectorAll('.like-btn');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const postId = this.getAttribute('data-post-id');
+                const heartIcon = this.querySelector('i.fa-heart');
+                const countSpan = this.querySelector('span');
+                
+                // Toggle like state
+                if (heartIcon.classList.contains('text-danger')) {
+                    heartIcon.classList.remove('text-danger');
+                    countSpan.textContent = parseInt(countSpan.textContent) - 1;
+                } else {
+                    heartIcon.classList.add('text-danger');
+                    countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                }
+                
+                // Here you would make an API call to like/unlike the post
+                console.log('Liked post:', postId);
+            });
+        });
+    });
+</script>

@@ -1,0 +1,199 @@
+@model HireSphere.Presentation.Models.CreatePostViewModel
+@{
+    ViewData["Title"] = "Create Post";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-plus-circle fa-2x me-3"></i>
+                        <div>
+                            <h3 class="mb-0">Create New Post</h3>
+                            <p class="mb-0">Share your thoughts with the community</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @ViewBag.SuccessMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @ViewBag.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Create" method="post">
+                        <div class="mb-4">
+                            <label asp-for="Title" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-heading"></i>
+                                </span>
+                                <input asp-for="Title" class="form-control" placeholder="Enter a compelling title for your post" />
+                            </div>
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Content" class="form-label"></label>
+                            <div class="form-floating">
+                                <textarea asp-for="Content" class="form-control" placeholder="What's on your mind?" style="height: 200px"></textarea>
+                                <label asp-for="Content">Share your thoughts, experiences, or insights...</label>
+                            </div>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                            <div class="form-text">
+                                <span id="charCount">0</span> / 2000 characters
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Tags" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-tags"></i>
+                                </span>
+                                <input asp-for="Tags" class="form-control" placeholder="technology, career, tips (comma-separated)" />
+                            </div>
+                            <span asp-validation-for="Tags" class="text-danger"></span>
+                            <div class="form-text">Add relevant tags to help others find your post</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ImageUrl" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-image"></i>
+                                </span>
+                                <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
+                            </div>
+                            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                            <div class="form-text">Optional: Add an image URL to make your post more engaging</div>
+                        </div>
+
+                        <!-- Preview Section -->
+                        <div class="mb-4">
+                            <h6>Preview</h6>
+                            <div class="card border-light">
+                                <div class="card-body">
+                                    <h6 id="previewTitle" class="text-muted">Your title will appear here...</h6>
+                                    <p id="previewContent" class="text-muted">Your content will appear here...</p>
+                                    <div id="previewTags" class="mb-2"></div>
+                                    <div id="previewImage" class="d-none">
+                                        <img id="previewImg" src="" alt="Preview" class="img-fluid rounded" style="max-height: 200px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Posts
+                            </a>
+                            
+                            <div>
+                                <button type="button" class="btn btn-outline-warning me-2" onclick="clearForm()">
+                                    <i class="fas fa-undo me-2"></i>Clear
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Publish Post
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Character counter
+        document.getElementById('Content').addEventListener('input', function() {
+            const charCount = this.value.length;
+            document.getElementById('charCount').textContent = charCount;
+            
+            if (charCount > 2000) {
+                document.getElementById('charCount').classList.add('text-danger');
+            } else {
+                document.getElementById('charCount').classList.remove('text-danger');
+            }
+        });
+
+        // Preview functionality
+        function updatePreview() {
+            const title = document.getElementById('Title').value;
+            const content = document.getElementById('Content').value;
+            const tags = document.getElementById('Tags').value;
+            const imageUrl = document.getElementById('ImageUrl').value;
+
+            // Update title
+            document.getElementById('previewTitle').textContent = title || 'Your title will appear here...';
+            document.getElementById('previewTitle').className = title ? 'fw-bold' : 'text-muted';
+
+            // Update content
+            document.getElementById('previewContent').textContent = content || 'Your content will appear here...';
+            document.getElementById('previewContent').className = content ? '' : 'text-muted';
+
+            // Update tags
+            const tagsContainer = document.getElementById('previewTags');
+            tagsContainer.innerHTML = '';
+            if (tags) {
+                const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                tagArray.forEach(tag => {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-light text-dark me-1';
+                    badge.textContent = '#' + tag;
+                    tagsContainer.appendChild(badge);
+                });
+            }
+
+            // Update image
+            const imageContainer = document.getElementById('previewImage');
+            const imageElement = document.getElementById('previewImg');
+            if (imageUrl) {
+                imageElement.src = imageUrl;
+                imageContainer.classList.remove('d-none');
+            } else {
+                imageContainer.classList.add('d-none');
+            }
+        }
+
+        // Add event listeners for preview
+        document.getElementById('Title').addEventListener('input', updatePreview);
+        document.getElementById('Content').addEventListener('input', updatePreview);
+        document.getElementById('Tags').addEventListener('input', updatePreview);
+        document.getElementById('ImageUrl').addEventListener('input', updatePreview);
+
+        // Clear form function
+        function clearForm() {
+            document.getElementById('Title').value = '';
+            document.getElementById('Content').value = '';
+            document.getElementById('Tags').value = '';
+            document.getElementById('ImageUrl').value = '';
+            document.getElementById('charCount').textContent = '0';
+            document.getElementById('charCount').classList.remove('text-danger');
+            updatePreview();
+        }
+
+        // Initialize preview
+        updatePreview();
+    </script>
+}
