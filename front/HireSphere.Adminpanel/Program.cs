@@ -27,6 +27,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddScoped<HireSphere.Adminpanel.Filters.SessionAuthorizationFilter>();
+builder.Services.AddScoped<HireSphere.Adminpanel.Services.IAdminService, HireSphere.Adminpanel.Services.AdminService>();
 
 var app = builder.Build();
 

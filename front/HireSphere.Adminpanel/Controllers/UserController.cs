@@ -20,8 +20,18 @@ public class UserController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? q)
     {
+        ViewBag.Query = q ?? string.Empty;
+        if (TempData.ContainsKey("SuccessMessage"))
+        {
+            ViewBag.SuccessMessage = TempData["SuccessMessage"];
+        }
+        if (TempData.ContainsKey("ErrorMessage"))
+        {
+            ViewBag.ErrorMessage = TempData["ErrorMessage"];
+        }
+
         try
         {
             var accessToken = HttpContext.Session.GetString("AccessToken");
@@ -67,8 +77,21 @@ public class UserController : Controller
                                 CreatedAt = u.CreatedAt,
                                 IsEmailConfirmed = u.IsEmailConfirmed
                             }).ToList();
+
+                            if (!string.IsNullOrWhiteSpace(q))
+                            {
+                                var query = q.Trim();
+                                userViewModels = userViewModels.Where(u =>
+                                    (!string.IsNullOrEmpty(u.FullName) && u.FullName.Contains(query, StringComparison.OrdinalIgnoreCase)) ||
+                                    (!string.IsNullOrEmpty(u.Email) && u.Email.Contains(query, StringComparison.OrdinalIgnoreCase))
+                                ).ToList();
+                                ViewBag.SuccessMessage = $"Found {userViewModels.Count} user" + (userViewModels.Count == 1 ? string.Empty : "s") + $" for '{q}'.";
+                            }
+                            else
+                            {
+                                ViewBag.SuccessMessage = $"Successfully loaded {userViewModels.Count} users.";
+                            }
                             
-                            ViewBag.SuccessMessage = $"Successfully loaded {userViewModels.Count} users.";
                             return View(userViewModels);
                         }
                         else

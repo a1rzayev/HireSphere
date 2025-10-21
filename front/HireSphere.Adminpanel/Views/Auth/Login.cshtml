@@ -44,7 +44,10 @@
                                 <span class="input-group-text">
                                     <i class="fas fa-lock"></i>
                                 </span>
-                                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" required />
+                                <input asp-for="Password" type="password" id="passwordInput" class="form-control" placeholder="Enter your password" required />
+                                <button type="button" class="btn btn-outline-secondary" id="togglePassword" title="Show/Hide Password">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                </button>
                             </div>
                             <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
@@ -70,4 +73,51 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <style>
+        #togglePassword {
+            border-left: none;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            transition: all 0.2s ease;
+        }
+        
+        #togglePassword:hover {
+            background-color: #e9ecef;
+            border-color: #ced4da;
+        }
+        
+        #togglePassword:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .input-group .form-control:focus {
+            z-index: 3;
+        }
+        
+        .input-group .btn {
+            z-index: 2;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('passwordInput');
+            const togglePassword = document.getElementById('togglePassword');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            togglePassword.addEventListener('click', function() {
+                // Toggle password visibility
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                    togglePassword.title = 'Hide Password';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                    togglePassword.title = 'Show Password';
+                }
+            });
+        });
+    </script>
 }

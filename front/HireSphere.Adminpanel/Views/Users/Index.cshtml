@@ -13,6 +13,16 @@
                     </h3>
                 </div>
                 <div class="card-body">
+                    <form method="get" class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" name="q" value="@ViewBag.Query" class="form-control" placeholder="Search by name or email..." />
+                                <button class="btn btn-outline-primary" type="submit">Search</button>
+                                <a href="@Url.Action("Index", "User")" class="btn btn-outline-secondary">Clear</a>
+                            </div>
+                        </div>
+                    </form>
                     @if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
                     {
                         <div class="alert alert-success alert-dismissible fade show" role="alert">

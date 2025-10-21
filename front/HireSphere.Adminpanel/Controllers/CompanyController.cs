@@ -21,8 +21,17 @@ public class CompanyController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? q, int page = 1, int pageSize = 10)
     {
+        if (TempData.ContainsKey("SuccessMessage"))
+        {
+            ViewBag.SuccessMessage = TempData["SuccessMessage"];
+        }
+        if (TempData.ContainsKey("ErrorMessage"))
+        {
+            ViewBag.ErrorMessage = TempData["ErrorMessage"];
+        }
+
         try
         {
             var accessToken = HttpContext.Session.GetString("AccessToken");
@@ -35,10 +44,18 @@ public class CompanyController : Controller
             if (string.IsNullOrEmpty(baseUrl) || baseUrl == "baseurl")
             {
                 ViewBag.ErrorMessage = "Configuration error: BASE_URL is not properly configured.";
-                return View(new List<CompanyViewModel>());
+                return View("~/Views/Companies/Index.cshtml", new List<CompanyViewModel>());
             }
 
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/api/company");
+            ViewBag.Query = q ?? string.Empty;
+            ViewBag.Page = page < 1 ? 1 : page;
+            ViewBag.PageSize = pageSize <= 0 ? 10 : pageSize;
+
+            var endpoint = string.IsNullOrWhiteSpace(q)
+                ? $"{baseUrl}/api/company"
+                : $"{baseUrl}/api/company/search/name/{Uri.EscapeDataString(q)}";
+
+            var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
             var response = await _httpClient.SendAsync(request);
@@ -69,38 +86,59 @@ public class CompanyController : Controller
                                 CreatedAt = c.CreatedAt
                             }).ToList();
                             
-                            ViewBag.SuccessMessage = $"Successfully loaded {companyViewModels.Count} companies.";
-                            return View(companyViewModels);
+                            var totalCount = companyViewModels.Count;
+                            var effectivePageSize = (int)ViewBag.PageSize;
+                            var totalPages = (int)Math.Ceiling((double)totalCount / Math.Max(1, effectivePageSize));
+                            var effectivePage = Math.Min(Math.Max(1, (int)ViewBag.Page), Math.Max(1, totalPages));
+
+                            var pagedCompanies = companyViewModels
+                                .Skip((effectivePage - 1) * effectivePageSize)
+                                .Take(effectivePageSize)
+                                .ToList();
+
+                            ViewBag.TotalCount = totalCount;
+                            ViewBag.TotalPages = totalPages;
+                            ViewBag.Page = effectivePage;
+
+                            if (!string.IsNullOrWhiteSpace(q))
+                            {
+                                ViewBag.SuccessMessage = $"Found {totalCount} compan" + (totalCount == 1 ? "y" : "ies") + $" for '{q}'.";
+                            }
+                            else
+                            {
+                                ViewBag.SuccessMessage = $"Successfully loaded {totalCount} companies.";
+                            }
+                            return View("~/Views/Companies/Index.cshtml", pagedCompanies);
                         }
                         else
                         {
                             ViewBag.ErrorMessage = "Failed to deserialize companies data";
-                            return View(new List<CompanyViewModel>());
+                            return View("~/Views/Companies/Index.cshtml", new List<CompanyViewModel>());
                         }
                     }
                     catch (JsonException ex)
                     {
                         ViewBag.ErrorMessage = $"Failed to parse companies data: {ex.Message}";
-                        return View(new List<CompanyViewModel>());
+                        return View("~/Views/Companies/Index.cshtml", new List<CompanyViewModel>());
                     }
                 }
                 else
                 {
                     ViewBag.ErrorMessage = "API returned empty response";
-                    return View(new List<CompanyViewModel>());
+                    return View("~/Views/Companies/Index.cshtml", new List<CompanyViewModel>());
                 }
             }
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 ViewBag.ErrorMessage = $"Failed to fetch companies: {response.StatusCode} - {errorContent}";
-                return View(new List<CompanyViewModel>());
+                return View("~/Views/Companies/Index.cshtml", new List<CompanyViewModel>());
             }
         }
         catch (Exception ex)
         {
             ViewBag.ErrorMessage = $"An error occurred while fetching companies: {ex.Message}";
-            return View(new List<CompanyViewModel>());
+            return View("~/Views/Companies/Index.cshtml", new List<CompanyViewModel>());
         }
     }
 
