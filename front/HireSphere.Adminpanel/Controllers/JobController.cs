@@ -21,6 +21,55 @@ public class JobController : Controller
         _logger = logger;
     }
 
+    public IActionResult Create()
+    {
+        return View(new JobViewModel());
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(JobViewModel model)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var baseUrl = _configuration["BASE_URL"];
+            var accessToken = HttpContext.Session.GetString("AccessToken");
+
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            _httpClient.DefaultRequestHeaders.Authorization = 
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+            var json = JsonSerializer.Serialize(model);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync($"{baseUrl}/api/jobs", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["SuccessMessage"] = "Job created successfully.";
+                return RedirectToAction("Index");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            ViewBag.ErrorMessage = "Failed to create job.";
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating job");
+            ViewBag.ErrorMessage = "An error occurred while creating job.";
+            return View(model);
+        }
+    }
+
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string search = "", string status = "")
     {
         try
